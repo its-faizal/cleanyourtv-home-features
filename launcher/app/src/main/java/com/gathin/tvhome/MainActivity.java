@@ -180,6 +180,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean pillsShown;
     private TextView shamsiDate;
     private TextView stats;
+    private MusicVisualizerView musicVisualizer;
+    private boolean musicVisualizerEnabled;
     private List<RaceWeekend.Race> raceCalendar;
     private View racePanel;
     private TextView raceKicker, raceHeadline, raceSessions;
@@ -437,6 +439,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         btnWifi = findViewById(R.id.btnWifi);
         shamsiDate = findViewById(R.id.shamsiDate);
         stats = findViewById(R.id.stats);
+        musicVisualizer = findViewById(R.id.musicVisualizer);
+        musicVisualizerEnabled = cfg.musicVisualizer;
         raceCalendar = cfg.raceCalendar;
         racePanel = findViewById(R.id.racePanel);
         raceKicker = findViewById(R.id.raceKicker);
@@ -854,6 +858,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             pillsShown = true;
         }
         if (showStats) startStats();
+        updateMusicVisualizer();
         sky.update();
         wallpaperPlayer.start();
         handler.postDelayed(minuteTick, MINUTE_MS);
@@ -1031,12 +1036,23 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         heroArt.animate().cancel();
         handler.removeCallbacks(minuteTick);
         stopStats();
+        musicVisualizer.stop();
         if (diya != null) diya.stop();
         cancelPendingFocusScroll();
         // Nothing of ours stays on screen over another app; an undecided prompt simply returns next time.
         if (cardPrompt != null) cardPrompt.dismiss();
         if (appLibrary != null) appLibrary.close();
         if (openPopup != null) openPopup.dismiss();
+    }
+
+    /** Captures the global playback mix only when the owner opted in and Home is the foreground activity. */
+    private void updateMusicVisualizer() {
+        boolean permitted = checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED;
+        boolean active = musicVisualizerEnabled && permitted;
+        musicVisualizer.setVisibility(active ? View.VISIBLE : View.GONE);
+        if (active) musicVisualizer.start();
+        else musicVisualizer.stop();
     }
 
     @Override

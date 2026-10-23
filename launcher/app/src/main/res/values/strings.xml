@@ -145,4 +145,10 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
+    <string name="music_visualizer">Music visualiser</string>
+    <string name="music_visualizer_state">Music visualiser · %1$s</string>
+    <string name="music_visualizer_hint">Show live audio bars on Home. Capture runs only while Home is visible.</string>
+    <string name="music_visualizer_permission_message">The visualiser reads the TV audio output while Home is open. Android labels this microphone permission, but the app does not open the microphone. Audio is processed on-device and is not saved or sent anywhere.</string>
+    <string name="music_visualizer_needs_permission">Permission needed</string>
+    <string name="music_visualizer_permission_denied">The visualiser stays off until audio permission is granted.</string>
 </resources>

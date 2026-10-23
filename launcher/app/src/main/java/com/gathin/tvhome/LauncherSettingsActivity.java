@@ -2,9 +2,11 @@ package com.gathin.tvhome;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -18,6 +20,7 @@ import java.util.List;
 /** Remote-friendly settings owned by the launcher; system settings stay one row away. */
 public final class LauncherSettingsActivity extends Activity {
     static final String EXTRA_REORDER = "com.gathin.tvhome.extra.REORDER_FROM_SETTINGS";
+    private static final int VISUALIZER_PERMISSION_REQUEST = 71;
     private SharedPreferences choices;
     private final TextView[] columnChoices = new TextView[4];
     private final TextView[] rowChoices = new TextView[4];
@@ -27,11 +30,13 @@ public final class LauncherSettingsActivity extends Activity {
     private TextView animationsChoice;
     private TextView advancedChoice;
     private TextView followThemeChoice;
+    private TextView musicVisualizerChoice;
     private int columns;
     private int rowsBelowDock;
     private int dockOpacity;
     private boolean animations;
     private boolean advancedEffects;
+    private boolean musicVisualizer;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -50,6 +55,7 @@ public final class LauncherSettingsActivity extends Activity {
         dockOpacity = config.dockOpacity;
         animations = config.animations;
         advancedEffects = config.animations && config.advancedEffects;
+        musicVisualizer = choices.getBoolean(Config.MUSIC_VISUALIZER_KEY, config.musicVisualizer);
 
         int[] ids = {R.id.columns4, R.id.columns5, R.id.columns6, R.id.columns7};
         for (int i = 0; i < ids.length; i++) {
@@ -119,17 +125,20 @@ public final class LauncherSettingsActivity extends Activity {
             }
         });
         followThemeChoice = findViewById(R.id.followThemeChoice);
+        musicVisualizerChoice = findViewById(R.id.musicVisualizerChoice);
+        musicVisualizerChoice.setOnClickListener(v -> toggleMusicVisualizer());
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
             choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
-                    .remove(Config.DOCK_OPACITY_KEY).commit();
+                    .remove(Config.DOCK_OPACITY_KEY).remove(Config.MUSIC_VISUALIZER_KEY).commit();
             Config current = Config.load(this);
             columns = current.columns;
             rowsBelowDock = current.rowsBelowDock;
             dockOpacity = current.dockOpacity;
             animations = current.animations;
             advancedEffects = current.animations && current.advancedEffects;
+            musicVisualizer = current.musicVisualizer;
             changed();
             refresh();
         });
@@ -142,6 +151,47 @@ public final class LauncherSettingsActivity extends Activity {
         refresh();
         if (config.launcherSettingsButton) reorderChoice.requestFocus();
         else columnChoices[Math.max(0, Math.min(columns - 4, 3))].requestFocus();
+    }
+
+    private void toggleMusicVisualizer() {
+        if (musicVisualizer && hasVisualizerPermission()) {
+            saveMusicVisualizer(false);
+            return;
+        }
+        if (hasVisualizerPermission()) {
+            saveMusicVisualizer(true);
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.music_visualizer)
+                .setMessage(R.string.music_visualizer_permission_message)
+                .setPositiveButton(R.string.enable, (dialog, which) -> requestPermissions(
+                        new String[]{Manifest.permission.RECORD_AUDIO}, VISUALIZER_PERMISSION_REQUEST))
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private boolean hasVisualizerPermission() {
+        return checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void saveMusicVisualizer(boolean enabled) {
+        musicVisualizer = enabled;
+        choices.edit().putBoolean(Config.MUSIC_VISUALIZER_KEY, enabled).apply();
+        changed();
+        refresh();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != VISUALIZER_PERMISSION_REQUEST) return;
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            saveMusicVisualizer(true);
+        } else {
+            Toast.makeText(this, R.string.music_visualizer_permission_denied, Toast.LENGTH_LONG).show();
+            refresh();
+        }
     }
 
     private void reverseRow(TextView[] views) {
@@ -232,13 +282,19 @@ public final class LauncherSettingsActivity extends Activity {
                 "none".equals(wallpaperCurrent) ? getString(R.string.wallpaper_none)
                         : wallpaperCurrent != null ? wallpaperCurrent
                         : getString(R.string.wallpaper_theme_default)));
+        String visualizerState = getString(musicVisualizer ? R.string.on : R.string.off);
+        if (musicVisualizer && !hasVisualizerPermission()) {
+            visualizerState = getString(R.string.music_visualizer_needs_permission);
+        }
+        musicVisualizerChoice.setText(getString(R.string.music_visualizer_state, visualizerState));
         followThemeChoice.setSelected(!hasOnTvChoices());
     }
 
     private boolean hasOnTvChoices() {
         return choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
                 || choices.contains("animations") || choices.contains("advanced_effects")
-                || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY);
+                || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
+                || choices.contains(Config.MUSIC_VISUALIZER_KEY);
     }
 
     private void open(Intent intent) {

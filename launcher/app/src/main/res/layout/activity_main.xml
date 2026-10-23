@@ -273,6 +273,16 @@
                     </LinearLayout>
                 </LinearLayout>
 
+                <!-- Optional output-mix visualiser; MainActivity starts capture only while Home is visible. -->
+                <com.gathin.tvhome.MusicVisualizerView
+                    android:id="@+id/musicVisualizer"
+                    android:layout_width="196dp"
+                    android:layout_height="28dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"
+                    android:importantForAccessibility="no" />
+
             </LinearLayout>
 
             <!-- Shown only when show_stats is on. Outside leftBlock, so the top buttons stay level with the clock
