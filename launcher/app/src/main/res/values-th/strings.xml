@@ -62,4 +62,30 @@
         <item quantity="other">%1$d แอป</item>
     </plurals>
     <string name="greeting_with_name">%1$s %2$s</string>
+    <string name="quick_restart_home">เริ่มหน้าจอหลักใหม่</string>
+    <string name="quick_recent_apps">แอปล่าสุด</string>
+    <string name="now_playing">กำลังเล่น</string>
+    <string name="media_play">เล่น</string>
+    <string name="media_pause">หยุดชั่วคราว</string>
+    <string name="now_playing_access">สิทธิ์เข้าถึงการแจ้งเตือน</string>
+    <string name="now_playing_access_message">อนุญาตให้เข้าถึงเซสชันสื่อที่กำลังทำงานในการตั้งค่า Android เพื่อแสดงเพลง ปกอัลบั้ม ความคืบหน้า และปุ่มควบคุม แอปจะไม่อ่านหรือบันทึกข้อความแจ้งเตือน</string>
+    <string name="now_playing_access_denied">ไม่ได้เปิดสิทธิ์เข้าถึงการแจ้งเตือน</string>
+    <string name="now_playing_access_needed">ต้องใช้สิทธิ์</string>
+    <string name="now_playing_state">กำลังเล่น · %1$s</string>
+    <string name="now_playing_hint">แสดงเพลง ปกอัลบั้ม ความคืบหน้า และปุ่มควบคุมบนหน้าจอหลัก ต้องอนุมัติสิทธิ์เข้าถึงการแจ้งเตือนหนึ่งครั้ง</string>
+    <string name="home_style">สไตล์หน้าจอหลัก</string>
+    <string name="home_style_state">สไตล์ · %1$s</string>
+    <string name="style_cinema">ภาพยนตร์</string>
+    <string name="style_glow">เรืองแสง</string>
+    <string name="style_minimal">มินิมอล</string>
+    <string name="home_palette">ชุดสีพื้นหลัง</string>
+    <string name="home_palette_state">ชุดสี · %1$s</string>
+    <string name="palette_midnight">น้ำเงินเที่ยงคืน</string>
+    <string name="palette_ocean">มหาสมุทรลึก</string>
+    <string name="palette_ember">ถ่านอุ่น</string>
+    <string name="tile_shape">มุมไทล์</string>
+    <string name="tile_shape_state">มุม · %1$s</string>
+    <string name="shape_square">เหลี่ยม</string>
+    <string name="shape_soft">มนเล็กน้อย</string>
+    <string name="shape_round">มน</string>
 </resources>

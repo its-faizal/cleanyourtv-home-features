@@ -145,4 +145,30 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Последний запуск: %1$s</string>
+    <string name="quick_restart_home">Перезапустить главный экран</string>
+    <string name="quick_recent_apps">Недавние приложения</string>
+    <string name="now_playing">Сейчас играет</string>
+    <string name="media_play">Воспроизвести</string>
+    <string name="media_pause">Пауза</string>
+    <string name="now_playing_access">Доступ к уведомлениям</string>
+    <string name="now_playing_access_message">Чтобы показывать трек, обложку, прогресс и элементы управления, разрешите доступ к активным медиасеансам в настройках Android. Приложение не читает и не сохраняет текст уведомлений.</string>
+    <string name="now_playing_access_denied">Доступ к уведомлениям не включён.</string>
+    <string name="now_playing_access_needed">Нужен доступ</string>
+    <string name="now_playing_state">Сейчас играет · %1$s</string>
+    <string name="now_playing_hint">Показывать трек, обложку, прогресс и элементы управления на главном экране. Требуется разовое разрешение на доступ к уведомлениям.</string>
+    <string name="home_style">Стиль главного экрана</string>
+    <string name="home_style_state">Стиль · %1$s</string>
+    <string name="style_cinema">Кино</string>
+    <string name="style_glow">Свечение</string>
+    <string name="style_minimal">Минимализм</string>
+    <string name="home_palette">Цвет фона</string>
+    <string name="home_palette_state">Палитра · %1$s</string>
+    <string name="palette_midnight">Полуночный синий</string>
+    <string name="palette_ocean">Глубокий океан</string>
+    <string name="palette_ember">Тёплый уголёк</string>
+    <string name="tile_shape">Углы плиток</string>
+    <string name="tile_shape_state">Углы · %1$s</string>
+    <string name="shape_square">Квадратные</string>
+    <string name="shape_soft">Мягкие</string>
+    <string name="shape_round">Скруглённые</string>
 </resources>

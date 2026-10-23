@@ -70,4 +70,31 @@
         <item quantity="other">%1$d aplikacija</item>
     </plurals>
     <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="quick_restart_home">Ponovo pokreni početni ekran</string>
+    <string name="quick_recent_apps">Nedavne aplikacije</string>
+    <string name="now_playing">Sada se reprodukuje</string>
+    <string name="media_play">Pusti</string>
+    <string name="media_pause">Pauziraj</string>
+    <string name="now_playing_access">Pristup obaveštenjima</string>
+    <string name="now_playing_access_message">Da bi prikazao trenutno reprodukovanu numeru, omot, napredak i kontrole, dozvoli ovoj aplikaciji pristup aktivnim medijskim sesijama u Android podešavanjima. Aplikacija ne čita niti čuva tekst obaveštenja.</string>
+    <string name="now_playing_access_denied">Pristup obaveštenjima nije omogućen.</string>
+    <string name="now_playing_access_needed">Potrebna dozvola</string>
+    <string name="now_playing_state">Sada se reprodukuje · %1$s</string>
+    <string name="now_playing_hint">Prikaži numeru, omot, napredak i kontrole reprodukcije na početnom ekranu. Potrebno je jednokratno odobrenje pristupa obaveštenjima.</string>
+    <string name="theme_designer">Dizajn teme</string>
+    <string name="home_style">Stil početnog ekrana</string>
+    <string name="home_style_state">Stil · %1$s</string>
+    <string name="style_cinema">Kino</string>
+    <string name="style_glow">Sijaj</string>
+    <string name="style_minimal">Minimalno</string>
+    <string name="home_palette">Paleta pozadine</string>
+    <string name="home_palette_state">Paleta · %1$s</string>
+    <string name="palette_midnight">Ponoćno plava</string>
+    <string name="palette_ocean">Duboki okean</string>
+    <string name="palette_ember">Topli žar</string>
+    <string name="tile_shape">Oblik pločica</string>
+    <string name="tile_shape_state">Oblik · %1$s</string>
+    <string name="shape_square">Četvrtasto</string>
+    <string name="shape_soft">Blago zaobljeno</string>
+    <string name="shape_round">Zaobljeno</string>
 </resources>

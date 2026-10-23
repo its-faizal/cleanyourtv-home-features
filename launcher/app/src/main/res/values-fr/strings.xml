@@ -88,4 +88,31 @@
         <item quantity="other">%1$d applications</item>
     </plurals>
     <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="quick_restart_home">Redémarrer l’accueil</string>
+    <string name="quick_recent_apps">Applications récentes</string>
+    <string name="now_playing">Lecture en cours</string>
+    <string name="media_play">Lire</string>
+    <string name="media_pause">Pause</string>
+    <string name="now_playing_access">Accès aux notifications</string>
+    <string name="now_playing_access_message">Pour afficher le titre, la pochette, la progression et les commandes, autorisez l’accès aux sessions multimédias actives dans les paramètres Android. L’application ne lit ni n’enregistre le texte des notifications.</string>
+    <string name="now_playing_access_denied">L’accès aux notifications n’a pas été activé.</string>
+    <string name="now_playing_access_needed">Accès requis</string>
+    <string name="now_playing_state">Lecture en cours · %1$s</string>
+    <string name="now_playing_hint">Affiche le titre, la pochette, la progression et les commandes sur l’accueil. Nécessite une autorisation unique d’accès aux notifications.</string>
+    <string name="theme_designer">Créateur de thème</string>
+    <string name="home_style">Style de l’accueil</string>
+    <string name="home_style_state">Style · %1$s</string>
+    <string name="style_cinema">Cinéma</string>
+    <string name="style_glow">Halo</string>
+    <string name="style_minimal">Minimal</string>
+    <string name="home_palette">Palette d’arrière-plan</string>
+    <string name="home_palette_state">Palette · %1$s</string>
+    <string name="palette_midnight">Bleu nuit</string>
+    <string name="palette_ocean">Océan profond</string>
+    <string name="palette_ember">Braise chaude</string>
+    <string name="tile_shape">Coins des vignettes</string>
+    <string name="tile_shape_state">Coins · %1$s</string>
+    <string name="shape_square">Carrés</string>
+    <string name="shape_soft">Doux</string>
+    <string name="shape_round">Arrondis</string>
 </resources>

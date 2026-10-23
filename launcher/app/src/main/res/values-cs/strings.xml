@@ -94,4 +94,31 @@
         <item quantity="other">%1$d aplikací</item>
     </plurals>
     <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="quick_restart_home">Restartovat domovskou obrazovku</string>
+    <string name="quick_recent_apps">Nedávné aplikace</string>
+    <string name="now_playing">Právě hraje</string>
+    <string name="media_play">Přehrát</string>
+    <string name="media_pause">Pozastavit</string>
+    <string name="now_playing_access">Přístup k oznámením</string>
+    <string name="now_playing_access_message">Chcete-li zobrazit aktuální skladbu, obal, průběh a ovládání, povolte aplikaci v nastavení Androidu přístup k aktivním relacím médií. Text oznámení nečte ani neukládá.</string>
+    <string name="now_playing_access_denied">Přístup k oznámením nebyl povolen.</string>
+    <string name="now_playing_access_needed">Je potřeba přístup</string>
+    <string name="now_playing_state">Právě hraje · %1$s</string>
+    <string name="now_playing_hint">Zobrazí aktuální skladbu, obal, průběh a ovládání na domovské obrazovce. Vyžaduje jednorázové povolení přístupu k oznámením.</string>
+    <string name="theme_designer">Editor vzhledu</string>
+    <string name="home_style">Styl domovské obrazovky</string>
+    <string name="home_style_state">Styl · %1$s</string>
+    <string name="style_cinema">Kino</string>
+    <string name="style_glow">Záře</string>
+    <string name="style_minimal">Minimalistický</string>
+    <string name="home_palette">Barva pozadí</string>
+    <string name="home_palette_state">Barva · %1$s</string>
+    <string name="palette_midnight">Půlnoční modrá</string>
+    <string name="palette_ocean">Temný oceán</string>
+    <string name="palette_ember">Teplý žár</string>
+    <string name="tile_shape">Rohy dlaždic</string>
+    <string name="tile_shape_state">Rohy · %1$s</string>
+    <string name="shape_square">Hranaté</string>
+    <string name="shape_soft">Měkce zaoblené</string>
+    <string name="shape_round">Zaoblené</string>
 </resources>

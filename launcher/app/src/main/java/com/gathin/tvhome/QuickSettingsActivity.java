@@ -33,6 +33,10 @@ public final class QuickSettingsActivity extends Activity {
         // Through Home, so it rebuilds with the new choices when Launcher settings closes.
         addRow(rows, R.drawable.ic_home_settings, R.string.launcher_settings, 0,
                 new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_LAUNCHER_SETTINGS));
+        // A regular launcher cannot reboot Android. This restarts Home itself and returns to its first tile.
+        addRow(rows, R.drawable.ic_restart, R.string.quick_restart_home, 0,
+                new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_RESTART_HOME)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
         rows.getChildAt(0).requestFocus();
     }
 

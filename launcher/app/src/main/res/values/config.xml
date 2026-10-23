@@ -174,6 +174,7 @@
          still opens on a tap; "hold:scan:490:..." works for scancodes. A key with only a hold entry does nothing
          on a tap. A listed app that is not installed leaves the button doing nothing. Leave empty to omit. -->
     <string-array name="app_keys" translatable="false">
+        <item>KEYCODE_APP_SWITCH:launcher:recent</item>
     </string-array>
 
     <!-- Package of the stock launcher, for TVs whose firmware turns it back on after it was disabled. XGIMI's

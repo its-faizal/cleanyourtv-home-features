@@ -65,4 +65,31 @@
         <item quantity="other">%1$d Apps</item>
     </plurals>
     <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="quick_restart_home">Startseite neu starten</string>
+    <string name="quick_recent_apps">Zuletzt verwendete Apps</string>
+    <string name="now_playing">Aktuelle Wiedergabe</string>
+    <string name="media_play">Wiedergabe</string>
+    <string name="media_pause">Pause</string>
+    <string name="now_playing_access">Benachrichtigungszugriff</string>
+    <string name="now_playing_access_message">Damit Titel, Cover, Fortschritt und Wiedergabesteuerung angezeigt werden, erlaube in den Android-Einstellungen den Zugriff auf aktive Mediensitzungen. Der Launcher liest oder speichert keine Benachrichtigungstexte.</string>
+    <string name="now_playing_access_denied">Benachrichtigungszugriff wurde nicht aktiviert.</string>
+    <string name="now_playing_access_needed">Zugriff erforderlich</string>
+    <string name="now_playing_state">Aktuelle Wiedergabe · %1$s</string>
+    <string name="now_playing_hint">Zeigt Titel, Cover, Fortschritt und Wiedergabesteuerung auf dem Startbildschirm. Einmalige Freigabe des Benachrichtigungszugriffs erforderlich.</string>
+    <string name="theme_designer">Theme-Designer</string>
+    <string name="home_style">Startbildschirmstil</string>
+    <string name="home_style_state">Stil · %1$s</string>
+    <string name="style_cinema">Kino</string>
+    <string name="style_glow">Leuchten</string>
+    <string name="style_minimal">Minimal</string>
+    <string name="home_palette">Hintergrundpalette</string>
+    <string name="home_palette_state">Palette · %1$s</string>
+    <string name="palette_midnight">Mitternachtsblau</string>
+    <string name="palette_ocean">Tiefsee</string>
+    <string name="palette_ember">Warme Glut</string>
+    <string name="tile_shape">Kachelecken</string>
+    <string name="tile_shape_state">Ecken · %1$s</string>
+    <string name="shape_square">Eckig</string>
+    <string name="shape_soft">Sanft</string>
+    <string name="shape_round">Rund</string>
 </resources>

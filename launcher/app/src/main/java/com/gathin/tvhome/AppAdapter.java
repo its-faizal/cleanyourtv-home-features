@@ -489,7 +489,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
         try {
             ctx.startActivity(i);
-            if (cinematic) LastOpened.record(ctx, e.pkg);
+            LastOpened.record(ctx, e.pkg);
             if (advancedEffects && !reducedMotion && ctx instanceof Activity) {
                 ((Activity) ctx).overridePendingTransition(R.anim.app_open_enter, R.anim.app_open_exit);
             }
@@ -669,8 +669,14 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     /** Corner radius for a tile of this width: 16dp at the design width, proportionally less when smaller. */
+    private static float cornerStyleFactor = 1f;
+
+    static void setCornerStyle(String style) {
+        cornerStyleFactor = "square".equals(style) ? 0.22f : "round".equals(style) ? 1.55f : 1f;
+    }
+
     static float cornerRadius(int tileWidthPx, float density) {
-        return 16f * density * Math.min(1f, tileWidthPx / (DESIGN_W_DP * density));
+        return 16f * cornerStyleFactor * density * Math.min(1f, tileWidthPx / (DESIGN_W_DP * density));
     }
 
     static final class Holder extends RecyclerView.ViewHolder {

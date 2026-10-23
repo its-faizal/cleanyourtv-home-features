@@ -88,4 +88,30 @@
         <item quantity="other">%1$d uygulama</item>
     </plurals>
     <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="quick_restart_home">Ana ekranı yeniden başlat</string>
+    <string name="quick_recent_apps">Son kullanılan uygulamalar</string>
+    <string name="now_playing">Şimdi çalıyor</string>
+    <string name="media_play">Oynat</string>
+    <string name="media_pause">Duraklat</string>
+    <string name="now_playing_access">Bildirim erişimi</string>
+    <string name="now_playing_access_message">Parça, albüm kapağı, ilerleme ve kontrolleri göstermek için Android ayarlarından etkin medya oturumlarına erişime izin verin. Uygulama bildirim metinlerini okumaz veya kaydetmez.</string>
+    <string name="now_playing_access_denied">Bildirim erişimi etkinleştirilmedi.</string>
+    <string name="now_playing_access_needed">Erişim gerekli</string>
+    <string name="now_playing_state">Şimdi çalıyor · %1$s</string>
+    <string name="now_playing_hint">Ana ekranda parçayı, kapağı, ilerlemeyi ve kontrolleri gösterir. Bir kez bildirim erişimi onayı gerekir.</string>
+    <string name="home_style">Ana ekran stili</string>
+    <string name="home_style_state">Stil · %1$s</string>
+    <string name="style_cinema">Sinema</string>
+    <string name="style_glow">Parıltı</string>
+    <string name="style_minimal">Minimal</string>
+    <string name="home_palette">Arka plan paleti</string>
+    <string name="home_palette_state">Palet · %1$s</string>
+    <string name="palette_midnight">Gece mavisi</string>
+    <string name="palette_ocean">Derin okyanus</string>
+    <string name="palette_ember">Sıcak köz</string>
+    <string name="tile_shape">Karo köşeleri</string>
+    <string name="tile_shape_state">Köşeler · %1$s</string>
+    <string name="shape_square">Köşeli</string>
+    <string name="shape_soft">Yumuşak</string>
+    <string name="shape_round">Yuvarlak</string>
 </resources>

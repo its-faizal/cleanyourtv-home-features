@@ -92,4 +92,31 @@
         <item quantity="other">%1$d تطبيق</item>
     </plurals>
     <string name="greeting_with_name">%1$s، %2$s</string>
+    <string name="quick_restart_home">إعادة تشغيل الشاشة الرئيسية</string>
+    <string name="quick_recent_apps">التطبيقات الأخيرة</string>
+    <string name="now_playing">الآن</string>
+    <string name="media_play">تشغيل</string>
+    <string name="media_pause">إيقاف مؤقت</string>
+    <string name="now_playing_access">إذن الإشعارات</string>
+    <string name="now_playing_access_message">لإظهار الأغنية الحالية وصورتها والتقدم وأزرار التحكم، اسمح للتطبيق بقراءة جلسات الوسائط النشطة من إعدادات Android. لا يقرأ التطبيق نصوص الإشعارات ولا يحفظها.</string>
+    <string name="now_playing_access_denied">لم يتم تفعيل إذن الإشعارات.</string>
+    <string name="now_playing_access_needed">الإذن مطلوب</string>
+    <string name="now_playing_state">التشغيل الآن · %1$s</string>
+    <string name="now_playing_hint">اعرض الأغنية الحالية وصورتها والتقدم وأزرار التشغيل والإيقاف المؤقت على الشاشة الرئيسية. يتطلب موافقة مرة واحدة على إذن الإشعارات.</string>
+    <string name="theme_designer">مصمم المظهر</string>
+    <string name="home_style">نمط الشاشة الرئيسية</string>
+    <string name="home_style_state">النمط · %1$s</string>
+    <string name="style_cinema">سينمائي</string>
+    <string name="style_glow">توهج</string>
+    <string name="style_minimal">بسيط</string>
+    <string name="home_palette">ألوان الخلفية</string>
+    <string name="home_palette_state">الألوان · %1$s</string>
+    <string name="palette_midnight">أزرق منتصف الليل</string>
+    <string name="palette_ocean">محيط عميق</string>
+    <string name="palette_ember">جمر دافئ</string>
+    <string name="tile_shape">زوايا التطبيقات</string>
+    <string name="tile_shape_state">شكل التطبيقات · %1$s</string>
+    <string name="shape_square">مربع</string>
+    <string name="shape_soft">ناعم</string>
+    <string name="shape_round">دائري</string>
 </resources>

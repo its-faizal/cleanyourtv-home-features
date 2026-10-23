@@ -1,5 +1,6 @@
 package com.gathin.tvhome;
 
+import android.annotation.SuppressLint;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
@@ -32,6 +33,9 @@ import android.graphics.drawable.GradientDrawable;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
+import android.media.MediaMetadata;
+import android.media.session.MediaController;
+import android.media.session.PlaybackState;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -67,6 +71,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -99,6 +104,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private static final int LAUNCHER_SETTINGS_REQUEST = 42;
     /** Sent by QuickSettingsActivity: open Launcher settings from here so Home rebuilds when they close. */
     static final String ACTION_LAUNCHER_SETTINGS = "com.gathin.tvhome.action.LAUNCHER_SETTINGS";
+    /** Sent by the quick panel: restart the launcher process UI without claiming to reboot the TV. */
+    static final String ACTION_RESTART_HOME = "com.gathin.tvhome.action.RESTART_HOME";
     /** The system input switcher, forwarded here by InputsRequestActivity while handle_view_inputs is on. */
     static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
     /** Tiles per row and dock slots (res/values/config.xml, columns). Set in onCreate. */
@@ -182,6 +189,27 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView stats;
     private MusicVisualizerView musicVisualizer;
     private boolean musicVisualizerEnabled;
+    private View nowPlayingCard;
+    private ImageView nowPlayingArt;
+    private TextView nowPlayingTitle, nowPlayingArtist, nowPlayingToggle;
+    private ProgressBar nowPlayingProgress;
+    private MediaController nowPlayingController;
+    private boolean nowPlayingEnabled;
+    private final MediaController.Callback nowPlayingCallback = new MediaController.Callback() {
+        @Override public void onMetadataChanged(MediaMetadata metadata) { root.post(MainActivity.this::onMediaSessionUpdated); }
+        @Override public void onPlaybackStateChanged(PlaybackState state) { root.post(MainActivity.this::onMediaSessionUpdated); }
+        @Override public void onSessionDestroyed() { root.post(MainActivity.this::updateNowPlayingCard); }
+    };
+    private final BroadcastReceiver mediaSessionReceiver = new BroadcastReceiver() {
+        @Override public void onReceive(Context context, Intent intent) { updateNowPlayingCard(); }
+    };
+    private final Runnable nowPlayingTick = new Runnable() {
+        @Override public void run() {
+            renderNowPlaying();
+            if (nowPlayingCard != null && nowPlayingCard.getVisibility() == View.VISIBLE
+                    && isPlaying(nowPlayingController)) root.postDelayed(this, 1000L);
+        }
+    };
     private List<RaceWeekend.Race> raceCalendar;
     private View racePanel;
     private TextView raceKicker, raceHeadline, raceSessions;
@@ -357,6 +385,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         density = getResources().getDisplayMetrics().density;
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
+        AppAdapter.setCornerStyle(getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE)
+                .getString("tile_shape", "soft"));
         appLibrarySelection = cfg.appLibrarySelection;
         // restore_key_services: after a force stop, put back the remote's accessibility helpers that Android took
         // off the list (needs WRITE_SECURE_SETTINGS, granted by build-and-install with RESTORE_KEY_SERVICES=1).
@@ -441,6 +471,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         stats = findViewById(R.id.stats);
         musicVisualizer = findViewById(R.id.musicVisualizer);
         musicVisualizerEnabled = cfg.musicVisualizer;
+        nowPlayingCard = findViewById(R.id.nowPlayingCard);
+        nowPlayingArt = findViewById(R.id.nowPlayingArt);
+        nowPlayingTitle = findViewById(R.id.nowPlayingTitle);
+        nowPlayingArtist = findViewById(R.id.nowPlayingArtist);
+        nowPlayingToggle = findViewById(R.id.nowPlayingToggle);
+        nowPlayingProgress = findViewById(R.id.nowPlayingProgress);
+        nowPlayingEnabled = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE)
+                .getBoolean(NowPlaying.SETTING_KEY, false);
+        nowPlayingToggle.setOnClickListener(v -> togglePlayback());
+        nowPlayingCard.setOnClickListener(v -> openMediaApp());
         raceCalendar = cfg.raceCalendar;
         racePanel = findViewById(R.id.racePanel);
         raceKicker = findViewById(R.id.raceKicker);
@@ -613,15 +653,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
         btnReorder = findViewById(R.id.btnReorder);
         btnReorder.setOnClickListener(v -> toggleReorder());
-        btnReorder.setVisibility(cfg.reorderButton ? View.VISIBLE : View.GONE);
+        // App management lives under one Customizer button; do not show a second reorder control.
+        btnReorder.setVisibility(View.GONE);
         if (!cfg.showNetworkPill) btnWifi.setVisibility(View.GONE);
         showInputsPill = cfg.showInputsPill;
         showInputsMenuRow = cfg.showInputsPill;
         btnLibraryTop = findViewById(R.id.btnLibraryTop);
-        btnLibraryTop.setOnClickListener(v -> {
-            onLibraryRequested();
-            libraryFromTopBar = true;   // closing it goes back to this button, not to the pill after the last row
-        });
+        btnLibraryTop.setOnClickListener(v -> showCustomizerMenu());
         btnLibraryTop.setVisibility(cfg.libraryButton && cfg.appLibrary ? View.VISIBLE : View.GONE);
         iconOnlyButtons = cfg.iconOnlyButtons;
         topMenu = cfg.topMenu;
@@ -783,6 +821,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        if (intent != null && ACTION_RESTART_HOME.equals(intent.getAction())) {
+            setIntent(new Intent(Intent.ACTION_MAIN));
+            recreate();
+            return;
+        }
         if (openLauncherSettingsIfAsked(intent)) return;
         if (openInputsIfAsked(intent)) return;
         if (intent == null || !intent.hasCategory(Intent.CATEGORY_HOME)) return;
@@ -799,6 +842,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     @Override
+    @SuppressLint("UnspecifiedRegisterReceiverFlag") // API < 33 has no exported-state overload; the API 33+ branch sets it.
     protected void onStart() {
         super.onStart();
         stopped = false;
@@ -807,6 +851,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             registerReceiver(timeReceiver, timeFilter, Context.RECEIVER_NOT_EXPORTED);
         } else {
             registerReceiver(timeReceiver, timeFilter);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(mediaSessionReceiver, new IntentFilter(NowPlaying.ACTION_CHANGED), Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(mediaSessionReceiver, new IntentFilter(NowPlaying.ACTION_CHANGED));
         }
         updateClockVisibility();
         tileRefresh.onStart();
@@ -859,6 +908,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         if (showStats) startStats();
         updateMusicVisualizer();
+        updateNowPlayingCard();
         sky.update();
         wallpaperPlayer.start();
         handler.postDelayed(minuteTick, MINUTE_MS);
@@ -1037,6 +1087,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         handler.removeCallbacks(minuteTick);
         stopStats();
         musicVisualizer.stop();
+        handler.removeCallbacks(nowPlayingTick);
+        unregisterNowPlayingCallback();
         if (diya != null) diya.stop();
         cancelPendingFocusScroll();
         // Nothing of ours stays on screen over another app; an undecided prompt simply returns next time.
@@ -1055,11 +1107,116 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         else musicVisualizer.stop();
     }
 
+    private void updateNowPlayingCard() {
+        if (nowPlayingCard == null) return;
+        handler.removeCallbacks(nowPlayingTick);
+        if (!nowPlayingEnabled || !NowPlaying.listenerEnabled(this)) {
+            unregisterNowPlayingCallback();
+            nowPlayingCard.setVisibility(View.GONE);
+            refreshHeroMediaArt();
+            return;
+        }
+        MediaController current = NowPlaying.activeController(this);
+        if (current != nowPlayingController) {
+            unregisterNowPlayingCallback();
+            nowPlayingController = current;
+            if (current != null) {
+                try { current.registerCallback(nowPlayingCallback); }
+                catch (RuntimeException unavailable) { nowPlayingController = null; }
+            }
+        }
+        if (nowPlayingController == null) {
+            nowPlayingCard.setVisibility(View.GONE);
+            refreshHeroMediaArt();
+            return;
+        }
+        nowPlayingCard.setVisibility(View.VISIBLE);
+        renderNowPlaying();
+        if (isPlaying(nowPlayingController)) handler.postDelayed(nowPlayingTick, 1000L);
+    }
+
+    private void unregisterNowPlayingCallback() {
+        handler.removeCallbacks(nowPlayingTick);
+        if (nowPlayingController != null) {
+            try { nowPlayingController.unregisterCallback(nowPlayingCallback); }
+            catch (RuntimeException ignored) { }
+            nowPlayingController = null;
+        }
+    }
+
+    private static boolean isPlaying(MediaController controller) {
+        if (controller == null) return false;
+        PlaybackState state = controller.getPlaybackState();
+        return state != null && state.getState() == PlaybackState.STATE_PLAYING;
+    }
+
+    private void renderNowPlaying() {
+        MediaController controller = nowPlayingController;
+        if (controller == null || nowPlayingCard == null) return;
+        MediaMetadata metadata = controller.getMetadata();
+        String title = metadata == null ? null : metadata.getString(MediaMetadata.METADATA_KEY_TITLE);
+        String artist = metadata == null ? null : metadata.getString(MediaMetadata.METADATA_KEY_ARTIST);
+        if ((artist == null || artist.isEmpty()) && metadata != null) {
+            artist = metadata.getString(MediaMetadata.METADATA_KEY_ALBUM);
+        }
+        nowPlayingTitle.setText(title == null || title.isEmpty() ? getString(R.string.now_playing) : title);
+        nowPlayingArtist.setText(artist == null || artist.isEmpty() ? controller.getPackageName() : artist);
+        android.graphics.Bitmap art = metadata == null ? null : metadata.getBitmap(MediaMetadata.METADATA_KEY_ART);
+        if (art == null && metadata != null) art = metadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
+        if (art != null) {
+            int edge = Math.max(1, Math.min(160, Math.max(art.getWidth(), art.getHeight())));
+            nowPlayingArt.setImageBitmap(art.getWidth() <= edge && art.getHeight() <= edge ? art
+                    : android.graphics.Bitmap.createScaledBitmap(art, edge, edge, true));
+        } else {
+            try { nowPlayingArt.setImageDrawable(getPackageManager().getApplicationIcon(controller.getPackageName())); }
+            catch (PackageManager.NameNotFoundException ignored) { nowPlayingArt.setImageResource(R.mipmap.ic_launcher); }
+        }
+        PlaybackState state = controller.getPlaybackState();
+        boolean playing = state != null && state.getState() == PlaybackState.STATE_PLAYING;
+        nowPlayingToggle.setText(playing ? "Ⅱ" : "▶");
+        nowPlayingToggle.setContentDescription(getString(playing ? R.string.media_pause : R.string.media_play));
+        long duration = metadata == null ? 0 : metadata.getLong(MediaMetadata.METADATA_KEY_DURATION);
+        long position = state == null ? 0 : state.getPosition();
+        if (playing && state != null && state.getLastPositionUpdateTime() > 0) {
+            position += (long) ((android.os.SystemClock.elapsedRealtime() - state.getLastPositionUpdateTime())
+                    * state.getPlaybackSpeed());
+        }
+        nowPlayingProgress.setProgress(duration > 0
+                ? (int) Math.min(1000, Math.max(0, position * 1000 / duration)) : 0);
+    }
+
+    private void onMediaSessionUpdated() {
+        renderNowPlaying();
+        refreshHeroMediaArt();
+    }
+
+    private void refreshHeroMediaArt() {
+        if (cinematic && heroShown && lastFocused >= 0 && lastFocused < COLUMNS) {
+            showHeroArt(lastFocused);
+        }
+    }
+
+    private void togglePlayback() {
+        if (nowPlayingController == null) return;
+        try {
+            MediaController.TransportControls controls = nowPlayingController.getTransportControls();
+            if (isPlaying(nowPlayingController)) controls.pause(); else controls.play();
+        } catch (RuntimeException unavailable) { updateNowPlayingCard(); }
+    }
+
+    private void openMediaApp() {
+        if (nowPlayingController == null) return;
+        String pkg = nowPlayingController.getPackageName();
+        LastOpened.record(this, pkg);
+        RemoteKeys.launch(this, pkg);
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
         started = false;
         unregisterReceiver(timeReceiver);
+        unregisterReceiver(mediaSessionReceiver);
         handler.removeCallbacks(clockCheck);
         stopped = true;
         tileRefresh.onStop();
@@ -1145,6 +1302,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (handleSettingsKey(event)) return true;
+        if (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) {
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+                open(new Intent(this, RecentAppsActivity.class));
+            }
+            return true;
+        }
         if (tileMenuEnabled && !reordering && openPopup == null && cardPrompt == null
                 && event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
             int position = focusedTilePosition();
@@ -1707,15 +1870,29 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private void showHeroArt(int position) {
         String key = adapter.keyAt(position);
         if (key == null) return;
+        MediaMetadata playing = nowPlayingController == null ? null : nowPlayingController.getMetadata();
+        Bitmap mediaBitmap = playing == null ? null : playing.getBitmap(MediaMetadata.METADATA_KEY_ART);
+        if (mediaBitmap == null && playing != null) mediaBitmap = playing.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
+        boolean mediaArt = mediaBitmap != null;
+        if (mediaArt) {
+            String mediaId = playing.getString(MediaMetadata.METADATA_KEY_MEDIA_ID);
+            if (mediaId == null || mediaId.isEmpty()) mediaId = playing.getString(MediaMetadata.METADATA_KEY_TITLE);
+            key = "media:" + nowPlayingController.getPackageName() + ":" + String.valueOf(mediaId);
+        }
         heroArt.animate().cancel();
         if (key.equals(heroArtKey)) {
             fadeHeroArt(420);
             return;
         }
-        Bitmap art = heroArtCache.get(key);
-        if (art == null) {
-            art = HeroArt.from(adapter.artworkAt(position));
-            if (art != null) heroArtCache.put(key, art);
+        Bitmap art;
+        if (mediaArt) {
+            art = HeroArt.from(new BitmapDrawable(getResources(), mediaBitmap));
+        } else {
+            art = heroArtCache.get(key);
+            if (art == null) {
+                art = HeroArt.from(adapter.artworkAt(position));
+                if (art != null) heroArtCache.put(key, art);
+            }
         }
         heroArtKey = key;
         final Bitmap next = art;
@@ -2149,7 +2326,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** The first top-bar button after Inputs that is shown: the network pill, Reorder, then Settings (always there). */
     private View firstTopButton() {
         if (btnWifi.getVisibility() == View.VISIBLE) return btnWifi;
-        if (btnReorder.getVisibility() == View.VISIBLE) return btnReorder;
+        if (btnLibraryTop.getVisibility() == View.VISIBLE) return btnLibraryTop;
         return findViewById(R.id.btnSettings);
     }
 
@@ -2934,6 +3111,28 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         rows.addView(row);
     }
 
+    /** One top-bar entry for app visibility, dock replacement, moving and home appearance. */
+    private void showCustomizerMenu() {
+        View anchor = btnLibraryTop;
+        View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);
+        LinearLayout rows = panel.findViewById(R.id.rows);
+        PopupWindow popup = glassPopup(panel, (int) (240 * density));
+        openPopup = popup;
+        addSettingsMenuRow(rows, popup, R.string.customizer_apps, () -> {
+            onLibraryRequested();
+            libraryFromTopBar = true;
+        });
+        if (dockRow) addSettingsMenuRow(rows, popup, R.string.customizer_replace, this::startDockEdit);
+        addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
+        addSettingsMenuRow(rows, popup, R.string.theme_designer, () -> startActivityForResult(
+                new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
+        if (moduleCards) addSettingsMenuRow(rows, popup, R.string.module_cards, this::showModuleCards);
+        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        popup.setWidth(Math.max((int) (240 * density), Math.min(panel.getMeasuredWidth(), (int) (360 * density))));
+        dropIn(popup, panel, anchor, getResources().getBoolean(R.bool.rtl_menu_bar) ? Gravity.START : Gravity.END);
+        if (rows.getChildCount() > 0) rows.getChildAt(0).requestFocus();
+    }
+
     // ---- launcher settings and module cards -------------------------------------------------------
 
     /** top_menu: the gear's dropdown, standing in for the Inputs, Wi-Fi and Settings pills. */
@@ -2973,9 +3172,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         PopupWindow popup = glassPopup(panel, (int) (200 * density));
         if (!launcherSettingsButton) addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
                 new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
-        if (moduleCards) addSettingsMenuRow(rows, popup, R.string.module_cards, this::showModuleCards);
-        if (dockRow) addSettingsMenuRow(rows, popup, R.string.dock_edit, this::startDockEdit);
-        addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
         panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         popup.setWidth(Math.max((int) (200 * density), panel.getMeasuredWidth()));
         // Hebrew puts Settings at the left of the header: grow the menu inward from it.

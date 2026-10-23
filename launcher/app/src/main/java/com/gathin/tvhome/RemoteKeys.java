@@ -157,6 +157,13 @@ final class RemoteKeys {
      *  switches to that TV input (an HDMI port) instead. */
     static void launch(Context ctx, String pkg) {
         if (pkg == null) return;
+        if ("launcher:recent".equals(pkg)) {
+            try {
+                ctx.startActivity(new Intent(ctx, RecentAppsActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (ActivityNotFoundException ignored) {
+            }
+            return;
+        }
         String inputId = inputId(pkg);
         if (inputId != null) {
             // The same passthrough URI the Inputs menu opens, which the Live TV app handles.

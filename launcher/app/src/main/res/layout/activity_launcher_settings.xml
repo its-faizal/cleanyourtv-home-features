@@ -94,6 +94,19 @@
             android:layout_marginTop="28dp" />
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/theme_designer"
+            android:textColor="#FFFFFFFF"
+            android:textSize="20sp"
+            android:fontFamily="@string/font_medium" />
+
+        <TextView android:id="@+id/homeStyleChoice" style="@style/SettingsRow" android:layout_marginTop="8dp" />
+        <TextView android:id="@+id/homePaletteChoice" style="@style/SettingsRow" android:layout_marginTop="8dp" />
+        <TextView android:id="@+id/tileShapeChoice" style="@style/SettingsRow" android:layout_marginTop="8dp" />
+
+        <TextView
             android:id="@+id/animationsChoice"
             style="@style/SettingsRow"
             android:layout_marginTop="28dp" />
@@ -113,6 +126,19 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="7dp"
             android:text="@string/music_visualizer_hint"
+            android:textColor="#FFACB8C1"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/nowPlayingChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:text="@string/now_playing_hint"
             android:textColor="#FFACB8C1"
             android:textSize="14sp" />
 

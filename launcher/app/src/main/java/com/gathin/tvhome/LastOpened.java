@@ -5,6 +5,10 @@ import android.content.SharedPreferences;
 import android.text.format.DateUtils;
 
 import java.util.Locale;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * When an app was last opened from Home, for the cinematic shelf's "Last opened" line: the launcher notes the
@@ -25,6 +29,20 @@ final class LastOpened {
     /** Milliseconds since the epoch, or 0 when Home never opened the app. */
     static long get(Context ctx, String pkg) {
         return pkg == null ? 0L : prefs(ctx).getLong(pkg, 0L);
+    }
+
+    /** Recent apps opened through Home, newest first. Package names only; labels and icons come from PackageManager. */
+    static List<String> recentPackages(Context ctx, int limit) {
+        Map<String, ?> all = prefs(ctx).getAll();
+        List<Map.Entry<String, ?>> entries = new ArrayList<>(all.entrySet());
+        entries.removeIf(entry -> !(entry.getValue() instanceof Long) || ctx.getPackageName().equals(entry.getKey()));
+        entries.sort((a, b) -> Long.compare((Long) b.getValue(), (Long) a.getValue()));
+        List<String> result = new ArrayList<>();
+        for (Map.Entry<String, ?> entry : entries) {
+            if (result.size() >= Math.max(0, limit)) break;
+            result.add(entry.getKey());
+        }
+        return Collections.unmodifiableList(result);
     }
 
     /**

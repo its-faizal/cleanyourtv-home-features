@@ -217,6 +217,28 @@
                         android:textAllCaps="true" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/nowPlayingCard"
+                    android:layout_width="320dp"
+                    android:layout_height="62dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/glass_panel"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="7dp"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:visibility="gone">
+                    <ImageView android:id="@+id/nowPlayingArt" android:layout_width="46dp" android:layout_height="46dp" android:scaleType="centerCrop" android:contentDescription="@null" />
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="10dp" android:orientation="vertical">
+                        <TextView android:id="@+id/nowPlayingTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:singleLine="true" android:ellipsize="end" android:textColor="#FFFFFFFF" android:textSize="14sp" android:fontFamily="@string/font_medium" />
+                        <TextView android:id="@+id/nowPlayingArtist" android:layout_width="match_parent" android:layout_height="wrap_content" android:singleLine="true" android:ellipsize="end" android:textColor="#B3FFFFFF" android:textSize="11sp" android:fontFamily="@string/font_regular" />
+                        <ProgressBar android:id="@+id/nowPlayingProgress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="3dp" android:layout_marginTop="5dp" android:max="1000" android:progress="0" android:progressTint="#FFFFFFFF" android:progressBackgroundTint="#55FFFFFF" />
+                    </LinearLayout>
+                    <TextView android:id="@+id/nowPlayingToggle" android:layout_width="42dp" android:layout_height="match_parent" android:layout_marginStart="6dp" android:gravity="center" android:focusable="true" android:clickable="true" android:text="Ⅱ" android:textColor="#FFFFFFFF" android:textSize="22sp" android:contentDescription="@string/media_pause" />
+                </LinearLayout>
+
                 <View
                     android:layout_width="1dp"
                     android:layout_height="26dp"
@@ -327,8 +349,8 @@
                     android:id="@+id/btnLibraryTop"
                     style="@style/TopButtonIcon"
                     android:visibility="gone"
-                    android:contentDescription="@string/app_library"
-                    android:drawableStart="@drawable/ic_apps"
+                    android:contentDescription="@string/customizer"
+                    android:drawableStart="@drawable/ic_customizer"
                     android:nextFocusDown="@+id/grid" />
 
                 <TextView

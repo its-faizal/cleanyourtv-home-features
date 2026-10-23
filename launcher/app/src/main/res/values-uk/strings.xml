@@ -144,4 +144,30 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Востаннє відкрито %1$s</string>
+    <string name="quick_restart_home">Перезапустити головний екран</string>
+    <string name="quick_recent_apps">Нещодавні застосунки</string>
+    <string name="now_playing">Зараз відтворюється</string>
+    <string name="media_play">Відтворити</string>
+    <string name="media_pause">Призупинити</string>
+    <string name="now_playing_access">Доступ до сповіщень</string>
+    <string name="now_playing_access_message">Щоб показувати трек, обкладинку, перебіг і елементи керування, дозвольте доступ до активних медіасеансів у налаштуваннях Android. Застосунок не читає та не зберігає текст сповіщень.</string>
+    <string name="now_playing_access_denied">Доступ до сповіщень не ввімкнено.</string>
+    <string name="now_playing_access_needed">Потрібен доступ</string>
+    <string name="now_playing_state">Зараз відтворюється · %1$s</string>
+    <string name="now_playing_hint">Показувати трек, обкладинку, перебіг і керування на головному екрані. Потрібен одноразовий дозвіл на доступ до сповіщень.</string>
+    <string name="home_style">Стиль головного екрана</string>
+    <string name="home_style_state">Стиль · %1$s</string>
+    <string name="style_cinema">Кіно</string>
+    <string name="style_glow">Світіння</string>
+    <string name="style_minimal">Мінімалізм</string>
+    <string name="home_palette">Палітра тла</string>
+    <string name="home_palette_state">Палітра · %1$s</string>
+    <string name="palette_midnight">Опівнічний синій</string>
+    <string name="palette_ocean">Глибокий океан</string>
+    <string name="palette_ember">Тепле вугілля</string>
+    <string name="tile_shape">Кути плиток</string>
+    <string name="tile_shape_state">Кути · %1$s</string>
+    <string name="shape_square">Квадратні</string>
+    <string name="shape_soft">М’які</string>
+    <string name="shape_round">Заокруглені</string>
 </resources>

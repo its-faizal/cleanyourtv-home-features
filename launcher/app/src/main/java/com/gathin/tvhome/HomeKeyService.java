@@ -159,6 +159,12 @@ public class HomeKeyService extends AccessibilityService {
             }
             return true;
         }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) {
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+                startActivity(new Intent(this, RecentAppsActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            }
+            return true;
+        }
         if (RemoteKeys.handle(this, event, appKeys.get(event.getKeyCode()),
                 holdAppKeys.get(event.getKeyCode()))) return true;
         if (event.getKeyCode() == KeyEvent.KEYCODE_HOME && !stockHome.isEmpty()) {

@@ -63,4 +63,30 @@
         <item quantity="other">%1$d 个应用</item>
     </plurals>
     <string name="greeting_with_name">%1$s，%2$s</string>
+    <string name="quick_restart_home">重新启动主屏幕</string>
+    <string name="quick_recent_apps">最近使用的应用</string>
+    <string name="now_playing">正在播放</string>
+    <string name="media_play">播放</string>
+    <string name="media_pause">暂停</string>
+    <string name="now_playing_access">通知访问权限</string>
+    <string name="now_playing_access_message">如需显示当前曲目、封面、进度和播放控制，请在 Android 设置中允许访问活动媒体会话。应用不会读取或保存通知文本。</string>
+    <string name="now_playing_access_denied">未启用通知访问权限。</string>
+    <string name="now_playing_access_needed">需要访问权限</string>
+    <string name="now_playing_state">正在播放 · %1$s</string>
+    <string name="now_playing_hint">在主屏幕显示曲目、封面、进度和播放控制。需要一次性授予通知访问权限。</string>
+    <string name="home_style">主屏幕风格</string>
+    <string name="home_style_state">风格 · %1$s</string>
+    <string name="style_cinema">影院</string>
+    <string name="style_glow">光晕</string>
+    <string name="style_minimal">简约</string>
+    <string name="home_palette">背景配色</string>
+    <string name="home_palette_state">配色 · %1$s</string>
+    <string name="palette_midnight">午夜蓝</string>
+    <string name="palette_ocean">深海</string>
+    <string name="palette_ember">暖炭</string>
+    <string name="tile_shape">应用图块圆角</string>
+    <string name="tile_shape_state">圆角 · %1$s</string>
+    <string name="shape_square">方角</string>
+    <string name="shape_soft">柔和</string>
+    <string name="shape_round">圆角</string>
 </resources>

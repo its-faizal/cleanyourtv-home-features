@@ -31,12 +31,16 @@ public final class LauncherSettingsActivity extends Activity {
     private TextView advancedChoice;
     private TextView followThemeChoice;
     private TextView musicVisualizerChoice;
+    private TextView nowPlayingChoice;
+    private TextView homeStyleChoice, homePaletteChoice, tileShapeChoice;
     private int columns;
     private int rowsBelowDock;
     private int dockOpacity;
     private boolean animations;
     private boolean advancedEffects;
     private boolean musicVisualizer;
+    private boolean nowPlayingEnabled;
+    private boolean awaitingNotificationAccess;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -56,6 +60,7 @@ public final class LauncherSettingsActivity extends Activity {
         animations = config.animations;
         advancedEffects = config.animations && config.advancedEffects;
         musicVisualizer = choices.getBoolean(Config.MUSIC_VISUALIZER_KEY, config.musicVisualizer);
+        nowPlayingEnabled = choices.getBoolean(NowPlaying.SETTING_KEY, false);
 
         int[] ids = {R.id.columns4, R.id.columns5, R.id.columns6, R.id.columns7};
         for (int i = 0; i < ids.length; i++) {
@@ -102,6 +107,12 @@ public final class LauncherSettingsActivity extends Activity {
         }
         wallpaperChoice = findViewById(R.id.wallpaperChoice);
         wallpaperChoice.setOnClickListener(v -> showWallpaperPicker());
+        homeStyleChoice = findViewById(R.id.homeStyleChoice);
+        homeStyleChoice.setOnClickListener(v -> chooseHomeStyle());
+        homePaletteChoice = findViewById(R.id.homePaletteChoice);
+        homePaletteChoice.setOnClickListener(v -> choosePalette());
+        tileShapeChoice = findViewById(R.id.tileShapeChoice);
+        tileShapeChoice.setOnClickListener(v -> chooseTileShape());
         animationsChoice = findViewById(R.id.animationsChoice);
         animationsChoice.setOnClickListener(v -> {
             animations = !animations;
@@ -127,11 +138,15 @@ public final class LauncherSettingsActivity extends Activity {
         followThemeChoice = findViewById(R.id.followThemeChoice);
         musicVisualizerChoice = findViewById(R.id.musicVisualizerChoice);
         musicVisualizerChoice.setOnClickListener(v -> toggleMusicVisualizer());
+        nowPlayingChoice = findViewById(R.id.nowPlayingChoice);
+        nowPlayingChoice.setOnClickListener(v -> toggleNowPlaying());
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
             choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
-                    .remove(Config.DOCK_OPACITY_KEY).remove(Config.MUSIC_VISUALIZER_KEY).commit();
+                    .remove(Config.DOCK_OPACITY_KEY).remove(Config.MUSIC_VISUALIZER_KEY)
+                    .remove("home_style").remove("home_palette")
+                    .remove("tile_shape").commit();
             Config current = Config.load(this);
             columns = current.columns;
             rowsBelowDock = current.rowsBelowDock;
@@ -151,6 +166,53 @@ public final class LauncherSettingsActivity extends Activity {
         refresh();
         if (config.launcherSettingsButton) reorderChoice.requestFocus();
         else columnChoices[Math.max(0, Math.min(columns - 4, 3))].requestFocus();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!awaitingNotificationAccess) return;
+        awaitingNotificationAccess = false;
+        nowPlayingEnabled = NowPlaying.listenerEnabled(this);
+        if (nowPlayingEnabled) {
+            choices.edit().putBoolean(NowPlaying.SETTING_KEY, true).apply();
+            changed();
+        } else {
+            choices.edit().putBoolean(NowPlaying.SETTING_KEY, false).apply();
+            Toast.makeText(this, R.string.now_playing_access_denied, Toast.LENGTH_LONG).show();
+        }
+        refresh();
+    }
+
+    private void toggleNowPlaying() {
+        if (nowPlayingEnabled) {
+            nowPlayingEnabled = false;
+            choices.edit().putBoolean(NowPlaying.SETTING_KEY, false).apply();
+            changed();
+            refresh();
+            return;
+        }
+        if (NowPlaying.listenerEnabled(this)) {
+            nowPlayingEnabled = true;
+            choices.edit().putBoolean(NowPlaying.SETTING_KEY, true).apply();
+            changed();
+            refresh();
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.now_playing_access)
+                .setMessage(R.string.now_playing_access_message)
+                .setPositiveButton(R.string.enable, (dialog, which) -> {
+                    awaitingNotificationAccess = true;
+                    try {
+                        startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
+                    } catch (ActivityNotFoundException | SecurityException unavailable) {
+                        awaitingNotificationAccess = false;
+                        Toast.makeText(this, R.string.not_available, Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void toggleMusicVisualizer() {
@@ -236,6 +298,71 @@ public final class LauncherSettingsActivity extends Activity {
                 .show();
     }
 
+    private void chooseHomeStyle() {
+        chooseValue("home_style", R.string.home_style,
+                new String[]{"theme", "cinema", "glow", "minimal"},
+                new int[]{R.string.theme_default, R.string.style_cinema, R.string.style_glow, R.string.style_minimal});
+    }
+
+    private void choosePalette() {
+        chooseValue("home_palette", R.string.home_palette,
+                new String[]{"theme", "midnight", "ocean", "ember"},
+                new int[]{R.string.theme_default, R.string.palette_midnight, R.string.palette_ocean, R.string.palette_ember});
+    }
+
+    private void chooseTileShape() {
+        chooseValue("tile_shape", R.string.tile_shape,
+                new String[]{"square", "soft", "round"},
+                new int[]{R.string.shape_square, R.string.shape_soft, R.string.shape_round});
+    }
+
+    private void chooseValue(String key, int title, String[] values, int[] labels) {
+        String selected = choices.getString(key, key.equals("tile_shape") ? "soft" : "theme");
+        int checked = 0;
+        CharSequence[] names = new CharSequence[labels.length];
+        for (int i = 0; i < labels.length; i++) {
+            names[i] = getString(labels[i]);
+            if (values[i].equals(selected)) checked = i;
+        }
+        new AlertDialog.Builder(this).setTitle(title).setSingleChoiceItems(names, checked, (dialog, which) -> {
+            String value = values[which];
+            if (value.equals(choices.getString(key, key.equals("tile_shape") ? "soft" : "theme"))) {
+                dialog.dismiss();
+                return;
+            }
+            choices.edit().putString(key, value).apply();
+            changed();
+            refresh();
+            dialog.dismiss();
+        }).setNegativeButton(android.R.string.cancel, null).show();
+    }
+
+    private int homeStyleLabel(String value) {
+        switch (value) {
+            case "cinema": return R.string.style_cinema;
+            case "glow": return R.string.style_glow;
+            case "minimal": return R.string.style_minimal;
+            default: return R.string.theme_default;
+        }
+    }
+
+    private int paletteLabel(String value) {
+        switch (value) {
+            case "midnight": return R.string.palette_midnight;
+            case "ocean": return R.string.palette_ocean;
+            case "ember": return R.string.palette_ember;
+            default: return R.string.theme_default;
+        }
+    }
+
+    private int tileShapeLabel(String value) {
+        switch (value) {
+            case "square": return R.string.shape_square;
+            case "round": return R.string.shape_round;
+            default: return R.string.shape_soft;
+        }
+    }
+
     private static int indexOf(List<File> images, String name) {
         if (name == null) return -1;
         for (int i = 0; i < images.size(); i++) {
@@ -287,6 +414,17 @@ public final class LauncherSettingsActivity extends Activity {
             visualizerState = getString(R.string.music_visualizer_needs_permission);
         }
         musicVisualizerChoice.setText(getString(R.string.music_visualizer_state, visualizerState));
+        String mediaState = getString(nowPlayingEnabled ? R.string.on : R.string.off);
+        if (nowPlayingEnabled && !NowPlaying.listenerEnabled(this)) {
+            mediaState = getString(R.string.now_playing_access_needed);
+        }
+        nowPlayingChoice.setText(getString(R.string.now_playing_state, mediaState));
+        homeStyleChoice.setText(getString(R.string.home_style_state, getString(homeStyleLabel(
+                choices.getString("home_style", "theme")))));
+        homePaletteChoice.setText(getString(R.string.home_palette_state, getString(paletteLabel(
+                choices.getString("home_palette", "theme")))));
+        tileShapeChoice.setText(getString(R.string.tile_shape_state, getString(tileShapeLabel(
+                choices.getString("tile_shape", "soft")))));
         followThemeChoice.setSelected(!hasOnTvChoices());
     }
 
@@ -294,7 +432,8 @@ public final class LauncherSettingsActivity extends Activity {
         return choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
                 || choices.contains("animations") || choices.contains("advanced_effects")
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
-                || choices.contains(Config.MUSIC_VISUALIZER_KEY);
+                || choices.contains(Config.MUSIC_VISUALIZER_KEY) || choices.contains("home_style")
+                || choices.contains("home_palette") || choices.contains("tile_shape");
     }
 
     private void open(Intent intent) {

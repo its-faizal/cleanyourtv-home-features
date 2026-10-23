@@ -90,4 +90,30 @@
         <item quantity="other">%1$d aplikacji</item>
     </plurals>
     <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="quick_restart_home">Uruchom ekran główny ponownie</string>
+    <string name="quick_recent_apps">Ostatnie aplikacje</string>
+    <string name="now_playing">Teraz odtwarzane</string>
+    <string name="media_play">Odtwórz</string>
+    <string name="media_pause">Wstrzymaj</string>
+    <string name="now_playing_access">Dostęp do powiadomień</string>
+    <string name="now_playing_access_message">Aby wyświetlać utwór, okładkę, postęp i sterowanie, zezwól w ustawieniach Androida na dostęp do aktywnych sesji multimediów. Aplikacja nie odczytuje ani nie zapisuje treści powiadomień.</string>
+    <string name="now_playing_access_denied">Dostęp do powiadomień nie został włączony.</string>
+    <string name="now_playing_access_needed">Wymagany dostęp</string>
+    <string name="now_playing_state">Teraz odtwarzane · %1$s</string>
+    <string name="now_playing_hint">Pokazuj utwór, okładkę, postęp i sterowanie na ekranie głównym. Wymaga jednorazowej zgody na dostęp do powiadomień.</string>
+    <string name="home_style">Styl ekranu głównego</string>
+    <string name="home_style_state">Styl · %1$s</string>
+    <string name="style_cinema">Kino</string>
+    <string name="style_glow">Blask</string>
+    <string name="style_minimal">Minimalny</string>
+    <string name="home_palette">Paleta tła</string>
+    <string name="home_palette_state">Paleta · %1$s</string>
+    <string name="palette_midnight">Granatowy</string>
+    <string name="palette_ocean">Głęboki ocean</string>
+    <string name="palette_ember">Ciepły żar</string>
+    <string name="tile_shape">Rogi kafelków</string>
+    <string name="tile_shape_state">Rogi · %1$s</string>
+    <string name="shape_square">Kanciaste</string>
+    <string name="shape_soft">Łagodne</string>
+    <string name="shape_round">Zaokrąglone</string>
 </resources>

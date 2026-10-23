@@ -93,4 +93,31 @@
         <item quantity="other">%1$dটি অ্যাপ</item>
     </plurals>
     <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="quick_restart_home">হোম পুনরায় চালু করুন</string>
+    <string name="quick_recent_apps">সাম্প্রতিক অ্যাপ</string>
+    <string name="now_playing">এখন চলছে</string>
+    <string name="media_play">চালান</string>
+    <string name="media_pause">বিরতি</string>
+    <string name="now_playing_access">বিজ্ঞপ্তি অ্যাক্সেস</string>
+    <string name="now_playing_access_message">বর্তমান ট্র্যাক, অ্যালবাম আর্ট, অগ্রগতি ও প্লেব্যাক নিয়ন্ত্রণ দেখাতে Android সেটিংসে সক্রিয় মিডিয়া সেশনে অ্যাক্সেস দিন। অ্যাপটি বিজ্ঞপ্তির লেখা পড়ে বা সংরক্ষণ করে না।</string>
+    <string name="now_playing_access_denied">বিজ্ঞপ্তি অ্যাক্সেস চালু করা হয়নি।</string>
+    <string name="now_playing_access_needed">অ্যাক্সেস প্রয়োজন</string>
+    <string name="now_playing_state">এখন চলছে · %1$s</string>
+    <string name="now_playing_hint">হোমে বর্তমান ট্র্যাক, আর্ট, অগ্রগতি ও প্লে/পজ নিয়ন্ত্রণ দেখান। একবার বিজ্ঞপ্তি অ্যাক্সেস অনুমোদন করতে হবে।</string>
+    <string name="theme_designer">থিম ডিজাইনার</string>
+    <string name="home_style">হোম স্টাইল</string>
+    <string name="home_style_state">স্টাইল · %1$s</string>
+    <string name="style_cinema">সিনেমা</string>
+    <string name="style_glow">আভা</string>
+    <string name="style_minimal">মিনিমাল</string>
+    <string name="home_palette">পটভূমির রং</string>
+    <string name="home_palette_state">রং · %1$s</string>
+    <string name="palette_midnight">মধ্যরাতের নীল</string>
+    <string name="palette_ocean">গভীর সমুদ্র</string>
+    <string name="palette_ember">উষ্ণ আভা</string>
+    <string name="tile_shape">টাইলের কোণা</string>
+    <string name="tile_shape_state">কোণা · %1$s</string>
+    <string name="shape_square">চৌকো</string>
+    <string name="shape_soft">নরম</string>
+    <string name="shape_round">গোল</string>
 </resources>

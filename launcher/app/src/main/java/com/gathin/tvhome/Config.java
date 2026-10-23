@@ -486,6 +486,30 @@ final class Config {
         animations = choices.getBoolean("animations", animations);
         advancedEffects = choices.getBoolean("advanced_effects", advancedEffects);
         musicVisualizer = choices.getBoolean(MUSIC_VISUALIZER_KEY, musicVisualizer);
+        String homeStyle = choices.getString("home_style", "theme");
+        if ("cinema".equals(homeStyle)) {
+            cinematic = true;
+            ambientGlow = true;
+            appGlow = false;
+            dockGlass = true;
+        } else if ("glow".equals(homeStyle)) {
+            cinematic = false;
+            ambientGlow = true;
+            appGlow = true;
+            dockGlass = true;
+        } else if ("minimal".equals(homeStyle)) {
+            cinematic = false;
+            ambientGlow = false;
+            appGlow = false;
+            dockGlass = false;
+            skyIntensity = 0;
+        }
+        switch (choices.getString("home_palette", "theme")) {
+            case "midnight": background = 0xFF080D18; break;
+            case "ocean": background = 0xFF071824; break;
+            case "ember": background = 0xFF1A100D; break;
+            default: break;
+        }
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
         if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
         // A theme can also switch the wallpaper off while the file is still there.
@@ -571,12 +595,13 @@ final class Config {
             SharedPreferences.Editor editor = choices.edit();
             if (!"absent".equals(token)) editor.remove("columns").remove("animations")
                     .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
-                    .remove(DOCK_OPACITY_KEY).remove(MUSIC_VISUALIZER_KEY);
+                    .remove(DOCK_OPACITY_KEY).remove(MUSIC_VISUALIZER_KEY).remove("home_style")
+                    .remove("home_palette").remove("tile_shape");
             editor.putString(THEME_SIGNATURE_KEY, signature).commit();
         } else if (!seen.equals(signature)) {
             choices.edit().remove("columns").remove("animations").remove("advanced_effects")
                     .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY).remove(DOCK_OPACITY_KEY)
-                    .remove(MUSIC_VISUALIZER_KEY)
+                    .remove(MUSIC_VISUALIZER_KEY).remove("home_style").remove("home_palette").remove("tile_shape")
                     .putString(THEME_SIGNATURE_KEY, signature).commit();
         }
     }
