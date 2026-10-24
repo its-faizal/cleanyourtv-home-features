@@ -108,6 +108,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     static final String ACTION_LAUNCHER_SETTINGS = "com.gathin.tvhome.action.LAUNCHER_SETTINGS";
     /** Sent by the quick panel: restart the launcher process UI without claiming to reboot the TV. */
     static final String ACTION_RESTART_HOME = "com.gathin.tvhome.action.RESTART_HOME";
+    static final String ACTION_PROFILE_MENU = "com.gathin.tvhome.action.PROFILE_MENU";
     /** The system input switcher, forwarded here by InputsRequestActivity while handle_view_inputs is on. */
     static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
     /** Tiles per row and dock slots (res/values/config.xml, columns). Set in onCreate. */
@@ -657,15 +658,18 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         btnReorder.setOnClickListener(v -> toggleReorder());
         // App management lives under one Customizer button; do not show a second reorder control.
         btnReorder.setVisibility(View.GONE);
-        if (!cfg.showNetworkPill) btnWifi.setVisibility(View.GONE);
+        // Keep the live network name visible on Home even when a theme would hide the pill.
         showInputsPill = cfg.showInputsPill;
         showInputsMenuRow = cfg.showInputsPill;
         btnLibraryTop = findViewById(R.id.btnLibraryTop);
         btnLibraryTop.setOnClickListener(v -> showCustomizerMenu());
-        btnLibraryTop.setVisibility(cfg.libraryButton && cfg.appLibrary ? View.VISIBLE : View.GONE);
+        btnLibraryTop.setVisibility(View.VISIBLE);
+        ((TextView) btnLibraryTop).setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_profile, 0, 0, 0);
+        btnLibraryTop.setContentDescription(getString(R.string.profile_button_description,
+                LauncherProfiles.name(this, LauncherProfiles.active(this))));
         iconOnlyButtons = cfg.iconOnlyButtons;
         topMenu = cfg.topMenu;
-        wifiIconOnly = iconOnlyButtons && cfg.wifiLabelWidth <= 0;
+        wifiIconOnly = false;
         if (cfg.wifiStatusColor) {
             wifiPlainTint = btnWifi.getCompoundDrawableTintList();
             wifiOnlineTint = getColorStateList(R.color.pill_icon_online);
@@ -675,7 +679,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // label up to date, which the menu's Wi-Fi row shows.
             showInputsPill = false;
             btnInputs.setVisibility(View.GONE);
-            btnWifi.setVisibility(View.GONE);
+            // Keep network identity on Home; other quick actions are under the profile control.
             ((TextView) btnSettings).setText(R.string.settings);
             ((TextView) btnSettings).setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_settings, 0, 0, 0);
             if (!iconOnlyButtons) makeIconOnly((TextView) btnSettings);
@@ -690,9 +694,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         if (iconOnlyButtons) {
             if (cfg.wifiLabelWidth > 0) btnWifi.setMaxWidth(Math.round(cfg.wifiLabelWidth * density));
-            else makeIconOnly(btnWifi);
+            else btnWifi.setMaxWidth(Math.round(280 * density));
             makeIconOnly((TextView) btnSettings);
         }
+        btnSettings.setVisibility(View.GONE);
         if (cfg.iconOnlyInputs) makeIconOnly((TextView) btnInputs);
         btnSettings.setOnLongClickListener(v -> {
             showSettingsMenu();
@@ -711,8 +716,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 return true;
             }
             int firstButton = btnInputs.getVisibility() == View.VISIBLE ? R.id.btnInputs : firstTopButton().getId();
-            int leftButton = rtlMenuBar ? R.id.btnSettings : firstButton;
-            int rightButton = rtlMenuBar ? firstButton : R.id.btnSettings;
+            int leftButton = rtlMenuBar ? R.id.btnLibraryTop : firstButton;
+            int rightButton = rtlMenuBar ? firstButton : R.id.btnLibraryTop;
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) return v.getId() == leftButton;
             return keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && v.getId() == rightButton;
         };
@@ -826,6 +831,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (intent != null && ACTION_RESTART_HOME.equals(intent.getAction())) {
             setIntent(new Intent(Intent.ACTION_MAIN));
             recreate();
+            return;
+        }
+        if (intent != null && ACTION_PROFILE_MENU.equals(intent.getAction())) {
+            setIntent(new Intent(Intent.ACTION_MAIN));
+            root.post(this::showCustomizerMenu);
             return;
         }
         if (openLauncherSettingsIfAsked(intent)) return;
@@ -1304,7 +1314,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (handleSettingsKey(event)) return true;
-        if (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH || event.getKeyCode() == KeyEvent.KEYCODE_GUIDE) {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
                 open(new Intent(this, RecentAppsActivity.class));
             }
@@ -3121,6 +3131,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         PopupWindow popup = glassPopup(panel, (int) (240 * density));
         openPopup = popup;
         addSettingsMenuRow(rows, popup, R.string.profiles, this::showProfiles);
+        addSettingsMenuRow(rows, popup, R.string.quick_recent_apps, () -> open(new Intent(this, RecentAppsActivity.class)));
+        addSettingsMenuRow(rows, popup, R.string.quick_settings, () -> open(new Intent(this, QuickSettingsActivity.class)));
+        addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
+                new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
+        addSettingsMenuRow(rows, popup, R.string.tv_settings, () -> open(systemIntent(Settings.ACTION_SETTINGS)));
         addSettingsMenuRow(rows, popup, R.string.customizer_apps, () -> {
             onLibraryRequested();
             libraryFromTopBar = true;

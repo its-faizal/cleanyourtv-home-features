@@ -400,7 +400,7 @@
                 <TextView
                     android:id="@+id/btnWifi"
                     style="@style/TopButton"
-                    android:maxWidth="180dp"
+                    android:maxWidth="280dp"
                     android:singleLine="true"
                     android:ellipsize="end"
                     android:text="@string/wifi"
@@ -417,14 +417,14 @@
                 <TextView
                     android:id="@+id/btnLibraryTop"
                     style="@style/TopButtonIcon"
-                    android:visibility="gone"
                     android:contentDescription="@string/customizer"
-                    android:drawableStart="@drawable/ic_customizer"
+                    android:drawableStart="@drawable/ic_profile"
                     android:nextFocusDown="@+id/grid" />
 
                 <TextView
                     android:id="@+id/btnSettings"
                     style="@style/TopButton"
+                    android:visibility="gone"
                     android:text="@string/settings"
                     android:drawableStart="@drawable/ic_settings"
                     android:nextFocusDown="@+id/grid" />

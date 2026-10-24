@@ -135,6 +135,11 @@
     <string name="profile_add">Add profile</string>
     <string name="profile_name">Profile name</string>
     <string name="profile_default_name">New profile</string>
+    <string name="profile_button_description">Profile: %1$s</string>
+    <string name="recent_clear_history">Clear history</string>
+    <string name="quick_settings">Quick settings</string>
+    <string name="quick_volume">Volume</string>
+    <string name="quick_display_sleep">Display and sleep</string>
     <string name="customizer_replace">Replace dock apps</string>
     <string name="library_empty">No launchable apps found</string>
     <string name="library_on_home">On Home</string>

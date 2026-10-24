@@ -31,6 +31,11 @@ final class LastOpened {
         return pkg == null ? 0L : prefs(ctx).getLong(pkg, 0L);
     }
 
+    /** Removes the launcher's local history; Android keeps any underlying app tasks and sessions. */
+    static void clear(Context ctx) {
+        prefs(ctx).edit().clear().apply();
+    }
+
     /** Recent apps opened through Home, newest first. Package names only; labels and icons come from PackageManager. */
     static List<String> recentPackages(Context ctx, int limit) {
         Map<String, ?> all = prefs(ctx).getAll();

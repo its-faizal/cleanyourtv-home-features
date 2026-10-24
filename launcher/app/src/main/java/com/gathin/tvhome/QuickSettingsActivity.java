@@ -1,13 +1,17 @@
 package com.gathin.tvhome;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,13 +30,17 @@ public final class QuickSettingsActivity extends Activity {
         findViewById(R.id.scrim).setOnClickListener(v -> finish());
         LinearLayout rows = findViewById(R.id.rows);
         addRow(rows, R.drawable.ic_settings, R.string.tv_settings, 0, SystemSettings.intent(this, Settings.ACTION_SETTINGS));
-        addRow(rows, R.drawable.ic_picture, R.string.quick_picture, 0, SystemSettings.intent(this, Settings.ACTION_DISPLAY_SETTINGS));
+        addRow(rows, R.drawable.ic_volume, R.string.quick_volume, 0, null);
+        addRow(rows, R.drawable.ic_picture, R.string.quick_display_sleep, 0, SystemSettings.intent(this, Settings.ACTION_DISPLAY_SETTINGS));
         addRow(rows, R.drawable.ic_wifi, R.string.quick_network, 0, SystemSettings.intent(this, Settings.ACTION_WIFI_SETTINGS));
         addRow(rows, R.drawable.ic_apps, R.string.quick_apps, R.string.quick_apps_hint,
                 SystemSettings.intent(this, Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS));
         // Through Home, so it rebuilds with the new choices when Launcher settings closes.
         addRow(rows, R.drawable.ic_home_settings, R.string.launcher_settings, 0,
                 new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_LAUNCHER_SETTINGS));
+        addRow(rows, R.drawable.ic_profile, R.string.profiles, 0,
+                new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_PROFILE_MENU)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
         // A regular launcher cannot reboot Android. This restarts Home itself and returns to its first tile.
         addRow(rows, R.drawable.ic_restart, R.string.quick_restart_home, 0,
                 new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_RESTART_HOME)
@@ -64,6 +72,10 @@ public final class QuickSettingsActivity extends Activity {
         if (status != 0) hint.setText(status);
         else hint.setVisibility(View.GONE);
         row.setOnClickListener(v -> {
+            if (target == null) {
+                showVolume();
+                return;
+            }
             try {
                 startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (ActivityNotFoundException | SecurityException e) {
@@ -72,5 +84,28 @@ public final class QuickSettingsActivity extends Activity {
             finish();
         });
         rows.addView(row);
+    }
+
+    private void showVolume() {
+        AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (audio == null) return;
+        int stream = AudioManager.STREAM_MUSIC;
+        SeekBar volume = new SeekBar(this);
+        volume.setMax(Math.max(1, audio.getStreamMaxVolume(stream)));
+        volume.setProgress(audio.getStreamVolume(stream));
+        volume.setFocusable(true);
+        volume.setFocusableInTouchMode(true);
+        volume.setPadding(24, 20, 24, 20);
+        volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar bar, int value, boolean fromUser) {
+                if (fromUser) audio.setStreamVolume(stream, value, 0);
+            }
+            @Override public void onStartTrackingTouch(SeekBar bar) { }
+            @Override public void onStopTrackingTouch(SeekBar bar) { }
+        });
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.quick_volume)
+                .setView(volume).setPositiveButton(android.R.string.ok, null).create();
+        dialog.setOnShowListener(ignored -> volume.requestFocus());
+        dialog.show();
     }
 }
