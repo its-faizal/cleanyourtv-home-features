@@ -142,8 +142,9 @@ public final class LauncherSettingsActivity extends Activity {
         nowPlayingChoice.setOnClickListener(v -> toggleNowPlaying());
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
+            String wallpaperKey = LauncherProfiles.wallpaperChoiceKey(this);
             choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
-                    .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
+                    .remove("advanced_effects").remove(wallpaperKey)
                     .remove(Config.DOCK_OPACITY_KEY).remove(Config.MUSIC_VISUALIZER_KEY)
                     .remove("home_style").remove("home_palette")
                     .remove("tile_shape").commit();
@@ -272,7 +273,8 @@ public final class LauncherSettingsActivity extends Activity {
         String[] labels = new String[images.size() + 1];
         for (int i = 0; i < images.size(); i++) labels[i] = images.get(i).getName();
         labels[images.size()] = getString(R.string.wallpaper_none);
-        String current = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
+        String wallpaperKey = LauncherProfiles.wallpaperChoiceKey(this);
+        String current = choices.getString(wallpaperKey, null);
         int checked = "none".equals(current) ? images.size()
                 : indexOf(images, current);
         new AlertDialog.Builder(this)
@@ -280,9 +282,9 @@ public final class LauncherSettingsActivity extends Activity {
                 .setSingleChoiceItems(labels, checked, (dialog, which) -> {
                     dialog.dismiss();
                     if (which == images.size()) {
-                        choices.edit().putString(Config.WALLPAPER_CHOICE_KEY, "none").apply();
+                        choices.edit().putString(wallpaperKey, "none").apply();
                     } else {
-                        choices.edit().putString(Config.WALLPAPER_CHOICE_KEY,
+                        choices.edit().putString(wallpaperKey,
                                 images.get(which).getName()).apply();
                     }
                     changed();
@@ -290,7 +292,7 @@ public final class LauncherSettingsActivity extends Activity {
                     refresh();
                 })
                 .setNeutralButton(R.string.wallpaper_theme_default, (dialog, which) -> {
-                    choices.edit().remove(Config.WALLPAPER_CHOICE_KEY).apply();
+                    choices.edit().remove(wallpaperKey).apply();
                     changed();
                     refresh();
                 })
@@ -404,7 +406,7 @@ public final class LauncherSettingsActivity extends Activity {
                 getString(advancedEffects ? R.string.on : R.string.off)));
         advancedChoice.setEnabled(animations);
         advancedChoice.setAlpha(animations ? 1f : 0.5f);
-        String wallpaperCurrent = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
+        String wallpaperCurrent = choices.getString(LauncherProfiles.wallpaperChoiceKey(this), null);
         wallpaperChoice.setText(getString(R.string.wallpaper_state,
                 "none".equals(wallpaperCurrent) ? getString(R.string.wallpaper_none)
                         : wallpaperCurrent != null ? wallpaperCurrent
@@ -431,7 +433,7 @@ public final class LauncherSettingsActivity extends Activity {
     private boolean hasOnTvChoices() {
         return choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
                 || choices.contains("animations") || choices.contains("advanced_effects")
-                || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
+                || choices.contains(LauncherProfiles.wallpaperChoiceKey(this)) || choices.contains(Config.DOCK_OPACITY_KEY)
                 || choices.contains(Config.MUSIC_VISUALIZER_KEY) || choices.contains("home_style")
                 || choices.contains("home_palette") || choices.contains("tile_shape");
     }

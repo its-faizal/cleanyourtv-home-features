@@ -23,11 +23,35 @@
             android:textSize="23sp"
             android:fontFamily="@string/font_medium" />
 
-        <LinearLayout
-            android:id="@+id/rows"
+        <HorizontalScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:layout_height="176dp"
+            android:scrollbars="none"
+            android:fillViewport="false">
+
+            <LinearLayout
+                android:id="@+id/rows"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/clearHistory"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:gravity="center"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:background="@drawable/input_row_bg"
+            android:text="@string/recent_clear_history"
+            android:textColor="@drawable/pill_text"
+            android:textSize="14sp"
+            android:fontFamily="@string/font_medium" />
 
         <TextView
             android:id="@+id/empty"

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -67,6 +68,7 @@ import android.view.Window;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -106,6 +108,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     static final String ACTION_LAUNCHER_SETTINGS = "com.gathin.tvhome.action.LAUNCHER_SETTINGS";
     /** Sent by the quick panel: restart the launcher process UI without claiming to reboot the TV. */
     static final String ACTION_RESTART_HOME = "com.gathin.tvhome.action.RESTART_HOME";
+    static final String ACTION_PROFILE_MENU = "com.gathin.tvhome.action.PROFILE_MENU";
     /** The system input switcher, forwarded here by InputsRequestActivity while handle_view_inputs is on. */
     static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
     /** Tiles per row and dock slots (res/values/config.xml, columns). Set in onCreate. */
@@ -423,10 +426,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // black under it is a second full-screen fill on every frame for nothing. The starting window still uses
         // the theme's background, so launch looks the same.
         getWindow().setBackgroundDrawable(null);
-        wallpaperPlayer = new WallpaperPlayer(this, root, cfg);
+        glass = findViewById(R.id.glass);
+        wallpaperPlayer = new WallpaperPlayer(this, root, glass, cfg);
         sky = findViewById(R.id.sky);
         sky.setIntensity(cfg.skyIntensity);
-        glass = findViewById(R.id.glass);
         if (festive) glass.setAccent(festival.accentColor());
         ambient = findViewById(R.id.ambient);
         // The glow is one bitmap, so its alpha can be applied while drawing it. Otherwise every frame of
@@ -565,7 +568,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         adapter = new AppAdapter(this, this, COLUMNS, cfg);
         dockApps = cfg.dockApps;
         fillDockLeavesSlots = !cfg.fillDock;
-        Order savedOrder = Order.load(Order.file(this));
+        Order savedOrder = Order.load(LauncherProfiles.orderFile(this));
         adapter.setSavedOrder(Order.ranks(savedOrder, dockApps), Order.docked(savedOrder, dockApps));
         grid.setAdapter(adapter);
 
@@ -655,15 +658,18 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         btnReorder.setOnClickListener(v -> toggleReorder());
         // App management lives under one Customizer button; do not show a second reorder control.
         btnReorder.setVisibility(View.GONE);
-        if (!cfg.showNetworkPill) btnWifi.setVisibility(View.GONE);
+        // Keep the live network name visible on Home even when a theme would hide the pill.
         showInputsPill = cfg.showInputsPill;
         showInputsMenuRow = cfg.showInputsPill;
         btnLibraryTop = findViewById(R.id.btnLibraryTop);
         btnLibraryTop.setOnClickListener(v -> showCustomizerMenu());
-        btnLibraryTop.setVisibility(cfg.libraryButton && cfg.appLibrary ? View.VISIBLE : View.GONE);
+        btnLibraryTop.setVisibility(View.VISIBLE);
+        ((TextView) btnLibraryTop).setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_profile, 0, 0, 0);
+        btnLibraryTop.setContentDescription(getString(R.string.profile_button_description,
+                LauncherProfiles.name(this, LauncherProfiles.active(this))));
         iconOnlyButtons = cfg.iconOnlyButtons;
         topMenu = cfg.topMenu;
-        wifiIconOnly = iconOnlyButtons && cfg.wifiLabelWidth <= 0;
+        wifiIconOnly = false;
         if (cfg.wifiStatusColor) {
             wifiPlainTint = btnWifi.getCompoundDrawableTintList();
             wifiOnlineTint = getColorStateList(R.color.pill_icon_online);
@@ -673,7 +679,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // label up to date, which the menu's Wi-Fi row shows.
             showInputsPill = false;
             btnInputs.setVisibility(View.GONE);
-            btnWifi.setVisibility(View.GONE);
+            // Keep network identity on Home; other quick actions are under the profile control.
             ((TextView) btnSettings).setText(R.string.settings);
             ((TextView) btnSettings).setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_settings, 0, 0, 0);
             if (!iconOnlyButtons) makeIconOnly((TextView) btnSettings);
@@ -688,9 +694,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         if (iconOnlyButtons) {
             if (cfg.wifiLabelWidth > 0) btnWifi.setMaxWidth(Math.round(cfg.wifiLabelWidth * density));
-            else makeIconOnly(btnWifi);
+            else btnWifi.setMaxWidth(Math.round(280 * density));
             makeIconOnly((TextView) btnSettings);
         }
+        btnSettings.setVisibility(View.GONE);
         if (cfg.iconOnlyInputs) makeIconOnly((TextView) btnInputs);
         btnSettings.setOnLongClickListener(v -> {
             showSettingsMenu();
@@ -709,8 +716,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 return true;
             }
             int firstButton = btnInputs.getVisibility() == View.VISIBLE ? R.id.btnInputs : firstTopButton().getId();
-            int leftButton = rtlMenuBar ? R.id.btnSettings : firstButton;
-            int rightButton = rtlMenuBar ? firstButton : R.id.btnSettings;
+            int leftButton = rtlMenuBar ? R.id.btnLibraryTop : firstButton;
+            int rightButton = rtlMenuBar ? firstButton : R.id.btnLibraryTop;
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) return v.getId() == leftButton;
             return keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && v.getId() == rightButton;
         };
@@ -824,6 +831,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (intent != null && ACTION_RESTART_HOME.equals(intent.getAction())) {
             setIntent(new Intent(Intent.ACTION_MAIN));
             recreate();
+            return;
+        }
+        if (intent != null && ACTION_PROFILE_MENU.equals(intent.getAction())) {
+            setIntent(new Intent(Intent.ACTION_MAIN));
+            root.post(this::showCustomizerMenu);
             return;
         }
         if (openLauncherSettingsIfAsked(intent)) return;
@@ -1302,7 +1314,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (handleSettingsKey(event)) return true;
-        if (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_APP_SWITCH || event.getKeyCode() == KeyEvent.KEYCODE_GUIDE) {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
                 open(new Intent(this, RecentAppsActivity.class));
             }
@@ -1553,7 +1565,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         dockInSession = null;
         if (!keys.equals(before) || (fillDockLeavesSlots && docked != dockedAtStart)) {
             Order order = new Order(Order.dockKey(dockApps), keys, docked);
-            if (Order.save(Order.file(this), order)) {
+            if (Order.save(LauncherProfiles.orderFile(this), order)) {
                 adapter.setSavedOrder(Order.ranks(order, dockApps), Order.docked(order, dockApps));
             } else {
                 Toast.makeText(this, R.string.reorder_not_saved, Toast.LENGTH_SHORT).show();
@@ -3118,6 +3130,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         LinearLayout rows = panel.findViewById(R.id.rows);
         PopupWindow popup = glassPopup(panel, (int) (240 * density));
         openPopup = popup;
+        addSettingsMenuRow(rows, popup, R.string.profiles, this::showProfiles);
+        addSettingsMenuRow(rows, popup, R.string.quick_recent_apps, () -> open(new Intent(this, RecentAppsActivity.class)));
+        addSettingsMenuRow(rows, popup, R.string.quick_settings, () -> open(new Intent(this, QuickSettingsActivity.class)));
+        addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
+                new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
+        addSettingsMenuRow(rows, popup, R.string.tv_settings, () -> open(systemIntent(Settings.ACTION_SETTINGS)));
         addSettingsMenuRow(rows, popup, R.string.customizer_apps, () -> {
             onLibraryRequested();
             libraryFromTopBar = true;
@@ -3131,6 +3149,35 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         popup.setWidth(Math.max((int) (240 * density), Math.min(panel.getMeasuredWidth(), (int) (360 * density))));
         dropIn(popup, panel, anchor, getResources().getBoolean(R.bool.rtl_menu_bar) ? Gravity.START : Gravity.END);
         if (rows.getChildCount() > 0) rows.getChildAt(0).requestFocus();
+    }
+
+    /** A local profile changes this launcher's saved app order and wallpaper choice. */
+    private void showProfiles() {
+        List<String> ids = LauncherProfiles.ids(this);
+        CharSequence[] labels = new CharSequence[ids.size() + 1];
+        for (int i = 0; i < ids.size(); i++) {
+            String id = ids.get(i);
+            labels[i] = (id.equals(LauncherProfiles.active(this)) ? "✓  " : "") + LauncherProfiles.name(this, id);
+        }
+        labels[ids.size()] = getString(R.string.profile_add);
+        new AlertDialog.Builder(this).setTitle(R.string.profiles).setItems(labels, (dialog, which) -> {
+            if (which == ids.size()) {
+                EditText input = new EditText(this);
+                input.setSingleLine(true);
+                input.setHint(R.string.profile_name);
+                new AlertDialog.Builder(this).setTitle(R.string.profile_add).setView(input)
+                        .setPositiveButton(android.R.string.ok, (d, w) -> {
+                            String name = input.getText().toString().trim();
+                            if (name.isEmpty()) name = getString(R.string.profile_default_name);
+                            String id = LauncherProfiles.create(this, name);
+                            LauncherProfiles.activate(this, id);
+                            recreate();
+                        }).setNegativeButton(android.R.string.cancel, null).show();
+            } else {
+                LauncherProfiles.activate(this, ids.get(which));
+                recreate();
+            }
+        }).show();
     }
 
     // ---- launcher settings and module cards -------------------------------------------------------

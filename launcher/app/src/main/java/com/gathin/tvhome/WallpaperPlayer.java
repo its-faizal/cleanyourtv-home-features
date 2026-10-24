@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -32,6 +33,7 @@ import java.util.concurrent.Executors;
 /** Displays and rotates a theme's local wallpaper images while Home is visible. */
 final class WallpaperPlayer {
     private final FrameLayout root;
+    private final GlassView glass;
     private final ImageView image;
     private final List<File> files;
     private final long interval;
@@ -61,8 +63,9 @@ final class WallpaperPlayer {
     private LocalDate sunDay;
     private int[] sun;
 
-    WallpaperPlayer(Context context, FrameLayout root, Config config) {
+    WallpaperPlayer(Context context, FrameLayout root, GlassView glass, Config config) {
         this.root = root;
+        this.glass = glass;
         files = new ArrayList<>(config.wallpapers);
         interval = config.wallpaperRotationMinutes * 60_000L;
         bitmapConfig = config.wallpaperTrueColor ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
@@ -150,6 +153,7 @@ final class WallpaperPlayer {
         active = false;
         closed = true;
         decoder.shutdownNow();
+        glass.clearWallpaperBackground();
     }
 
     void update() {
@@ -251,7 +255,26 @@ final class WallpaperPlayer {
         Bitmap old = current;
         current = bitmap;
         image.setImageBitmap(bitmap);
+        updateGlassBackground(bitmap);
         if (old != null && old != bitmap) image.postDelayed(old::recycle, 500);
+    }
+
+    private void updateGlassBackground(Bitmap bitmap) {
+        if (Build.VERSION.SDK_INT >= 31) {
+            glass.setWallpaperBackground(bitmap);
+            glass.setBlurredBackground(null);
+            return;
+        }
+        decoder.execute(() -> {
+            Bitmap blurred = WallpaperBlur.create(bitmap, width, height);
+            root.post(() -> {
+                if (closed || current != bitmap) {
+                    if (blurred != null && !blurred.isRecycled()) blurred.recycle();
+                    return;
+                }
+                glass.setBlurredBackground(blurred);
+            });
+        });
     }
 
     private Bitmap decode(File file) {
