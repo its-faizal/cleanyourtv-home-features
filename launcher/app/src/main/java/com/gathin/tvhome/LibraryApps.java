@@ -26,7 +26,11 @@ final class LibraryApps {
     private LibraryApps() { }
 
     private static AtomicFile store(Context context, boolean removed) {
-        return new AtomicFile(new File(context.getFilesDir(), removed ? "library_home_removed.txt" : "library_apps.txt"));
+        String profile = LauncherProfiles.active(context);
+        String suffix = profile.equals(LauncherProfiles.DEFAULT) ? ""
+                : "_" + profile;
+        return new AtomicFile(new File(context.getFilesDir(),
+                (removed ? "library_home_removed" : "library_apps") + suffix + ".txt"));
     }
 
     static Set<String> load(Context context) {

@@ -131,6 +131,10 @@
     <string name="app_library">App library</string>
     <string name="customizer">Customizer</string>
     <string name="customizer_apps">Pin or hide apps</string>
+    <string name="profiles">Profiles</string>
+    <string name="profile_add">Add profile</string>
+    <string name="profile_name">Profile name</string>
+    <string name="profile_default_name">New profile</string>
     <string name="customizer_replace">Replace dock apps</string>
     <string name="library_empty">No launchable apps found</string>
     <string name="library_on_home">On Home</string>
