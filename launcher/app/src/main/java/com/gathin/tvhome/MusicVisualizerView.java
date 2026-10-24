@@ -9,7 +9,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 /** Lightweight output-mix spectrum bars. Capture exists only while the Home activity is resumed. */
-final class MusicVisualizerView extends View {
+public final class MusicVisualizerView extends View {
     private static final int BAR_COUNT = 28;
     private static final int CAPTURE_SIZE = 256;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -17,7 +17,7 @@ final class MusicVisualizerView extends View {
     private final RectF bar = new RectF();
     private Visualizer visualizer;
 
-    MusicVisualizerView(Context context, AttributeSet attrs) {
+    public MusicVisualizerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         paint.setColor(0xFF9AD8FF);

@@ -2,25 +2,36 @@ package com.gathin.tvhome;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Bitmap;
+import android.graphics.Path;
+import android.graphics.RenderEffect;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
+import android.os.Build;
+import android.widget.FrameLayout;
 
 /**
  * A translucent glass slab: soft sheen fill, bright top specular, crisp rim and a faint outer glow.
  * One instance floats over the grid and is moved with spring animations between tiles.
  */
-public class GlassView extends View {
+public class GlassView extends FrameLayout {
 
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint specular = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint rim = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint glow = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rect = new RectF();
+    private final Path clip = new Path();
+    private final Paint backdrop = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private final BackdropLayer backdropLayer;
     private final float density;
+    private Bitmap wallpaper;
+    private Bitmap blurredBackground;
     private float radius;
     /** Glow colour as 0xRRGGBB: white normally, a festival's accent (diya gold) while a festive skin is on. */
     private int glowRgb = 0xFFFFFF;
@@ -31,6 +42,10 @@ public class GlassView extends View {
         super(context, attrs);
         density = getResources().getDisplayMetrics().density;
         radius = 20f * density;
+        backdropLayer = new BackdropLayer(context);
+        backdropLayer.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+        addView(backdropLayer, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         rim.setStyle(Paint.Style.STROKE);
         rim.setStrokeWidth(1.5f * density);
         rim.setColor(0xCCFFFFFF);
@@ -39,6 +54,32 @@ public class GlassView extends View {
         // move it without replaying clipPath and the glow on every frame. That path is
         // software-rendered on the MT5895 and is what makes the highlight crawl.
         setLayerType(LAYER_TYPE_HARDWARE, null);
+        if (Build.VERSION.SDK_INT >= 31) {
+            float blurRadius = 16f * density;
+            backdropLayer.setRenderEffect(RenderEffect.createBlurEffect(
+                    blurRadius, blurRadius, Shader.TileMode.CLAMP));
+        }
+    }
+
+    /** The source wallpaper is drawn through a real RenderEffect on Android 12 and newer. */
+    void setWallpaperBackground(Bitmap bitmap) {
+        wallpaper = bitmap;
+        backdropLayer.invalidate();
+    }
+
+    /** Pre-blurred, low-resolution wallpaper for Android 11 and older. Ownership passes to this view. */
+    void setBlurredBackground(Bitmap bitmap) {
+        Bitmap previous = blurredBackground;
+        blurredBackground = bitmap;
+        backdropLayer.invalidate();
+        if (previous != null && previous != bitmap) postDelayed(() -> {
+            if (previous != blurredBackground && !previous.isRecycled()) previous.recycle();
+        }, 500);
+    }
+
+    void clearWallpaperBackground() {
+        wallpaper = null;
+        setBlurredBackground(null);
     }
 
     /** Tints the rim and the outer glow; 0 restores the plain white glass. */
@@ -60,6 +101,7 @@ public class GlassView extends View {
 
     void setRadius(float px) {
         radius = px;
+        backdropLayer.invalidate();
         invalidate();
     }
 
@@ -71,7 +113,8 @@ public class GlassView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
         float inset = 6f * density;   // room for the glow
         rect.set(inset, inset, getWidth() - inset, getHeight() - inset);
 
@@ -98,5 +141,30 @@ public class GlassView extends View {
         canvas.restore();
 
         canvas.drawRoundRect(rect, radius, radius, rim);
+    }
+
+    private final class BackdropLayer extends View {
+        private BackdropLayer(Context context) {
+            super(context);
+            setFocusable(false);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            Bitmap source = Build.VERSION.SDK_INT >= 31 ? wallpaper : blurredBackground;
+            if (source == null || source.isRecycled() || !(getParent() instanceof View)) return;
+            View glass = (View) getParent();
+            if (!(glass.getParent() instanceof View)) return;
+            View root = (View) glass.getParent();
+            clip.reset();
+            clip.addRoundRect(6f * density, 6f * density, getWidth() - 6f * density,
+                    getHeight() - 6f * density, radius, radius, Path.Direction.CW);
+            canvas.save();
+            canvas.clipPath(clip);
+            WallpaperBlur.drawCover(canvas, source, root.getWidth(), root.getHeight(),
+                    -glass.getX(), -glass.getY(), backdrop);
+            canvas.restore();
+        }
     }
 }
