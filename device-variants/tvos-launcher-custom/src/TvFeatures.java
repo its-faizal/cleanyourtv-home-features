@@ -106,6 +106,12 @@ public final class TvFeatures {
     int b=(Color.blue(color)*amount+13*(255-amount))/255;
     return Color.rgb(r,g,b);
   }
+  private static int mix(int from,int to,int amount) {
+    int inverse=255-amount;
+    return Color.rgb((Color.red(from)*inverse+Color.red(to)*amount)/255,
+      (Color.green(from)*inverse+Color.green(to)*amount)/255,
+      (Color.blue(from)*inverse+Color.blue(to)*amount)/255);
+  }
   public static void applyFocusGradient(Activity a, FrameLayout root, android.view.View tile, int color, int position) {
     updateHeaderForFocus(root,position);
     int hintId=a.getResources().getIdentifier("fullHint","id",a.getPackageName());android.view.View hint=root.findViewById(hintId);
@@ -127,12 +133,15 @@ public final class TvFeatures {
     int shelfId=a.getResources().getIdentifier("shelfGroup","id",a.getPackageName());
     android.view.View shelf=a.findViewById(shelfId);
     if(shelf!=null)shelf.setVisibility(android.view.View.GONE);
-    GradientDrawable base=new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-      new int[]{tint(color,40),tint(color,18),tint(color,9)});base.setDither(true);
+    boolean dark=a.getSharedPreferences("appearance",0).getBoolean("dark",false);
+    int[] gradient=dark
+      ?new int[]{tint(color,40),tint(color,18),tint(color,9)}
+      :new int[]{mix(color,Color.WHITE,32),mix(color,Color.WHITE,112),mix(color,Color.WHITE,184)};
+    GradientDrawable backdrop=new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,gradient);backdrop.setDither(true);
     android.graphics.drawable.Drawable old=root.getBackground();
-    if(old==null) root.setBackground(base);
+    if(old==null) root.setBackground(backdrop);
     else {
-      android.graphics.drawable.TransitionDrawable transition=new android.graphics.drawable.TransitionDrawable(new android.graphics.drawable.Drawable[]{old,base});
+      android.graphics.drawable.TransitionDrawable transition=new android.graphics.drawable.TransitionDrawable(new android.graphics.drawable.Drawable[]{old,backdrop});
       transition.setCrossFadeEnabled(true); root.setBackground(transition); transition.startTransition(520);
     }
     AmbientGlowView glow=(AmbientGlowView)root.findViewWithTag("tvos_ambient_glow");
